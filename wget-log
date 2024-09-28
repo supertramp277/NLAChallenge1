@@ -1,0 +1,11 @@
+--2024-09-28 00:27:23--  https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Albert_Einstein_Head.jpg/128px-Albert_Einstein_Head.jpg?20141125195928=
+Resolving upload.wikimedia.org (upload.wikimedia.org)... 185.15.58.240, 2a02:ec80:600:ed1a::2:b
+Connecting to upload.wikimedia.org (upload.wikimedia.org)|185.15.58.240|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 8287 (8.1K) [image/jpeg]
+Saving to: ‘128px-Albert_Einstein_Head.jpg?20141125195928=’
+
+              128px-Albert_E   0%[                                            ]       0  --.-KB/s               128px-Albert_Einstein_Head.j 100%[===========================================>]   8.09K  --.-KB/s    in 0s      
+
+2024-09-28 00:27:23 (355 MB/s) - ‘128px-Albert_Einstein_Head.jpg?20141125195928=’ saved [8287/8287]
+
