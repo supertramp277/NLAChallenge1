@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
     // Perform convolution function
     SparseMatrix<double, RowMajor> A1 = convolution(hav2, height, width);
     // Check the nonzero numbers
-    std::cout << "A1 numbers is " << A1.nonZeros() << std::endl;
+    std::cout << "A1 nonzero numbers is " << A1.nonZeros() << std::endl;
     // Smooth the noise image
     smoothImage(A1, height, width, w);
 
@@ -183,7 +183,12 @@ int main(int argc, char *argv[])
     // Perform convolution function
     SparseMatrix<double, RowMajor> A2 = convolution(hsh2, height, width);
     // Check the nonzero numbers
-    std::cout << "A2 numbers is " << A2.nonZeros() << std::endl;
+    std::cout << "A2 nonzero numbers is " << A2.nonZeros() << std::endl;
+    // Verify if the matrix is symmetric, attention that A2.tranpose() should be type declaration
+    double norm_diff = (A2 - SparseMatrix<double, RowMajor>(A2.transpose())).norm();
+    std::cout << "A2 row:" << A2.rows() << "columns:" << A2.cols() << std::endl;
+    std::cout << "Check if A2 is symmectric by its difference with transpose by norm:"
+              << norm_diff << std::endl;
     // Sharpen the original image
     sharpenImage(A2, height, width, v);
 
