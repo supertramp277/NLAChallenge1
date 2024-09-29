@@ -89,7 +89,7 @@ void exprotSparsematrix(SparseMatrix<double, RowMajor> data, const std::string p
 {
     if (saveMarket(data, path))
     {
-        std::cout << "Sparse matrix A2 saved to " << path << std::endl;
+        std::cout << "Sparse matrix A saved to " << path << std::endl;
     }
     else
     {
@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
     SparseMatrix<double, RowMajor> A3 = convolutionMatrix(hlap, height, width);
     // Check if A3 is symmectic
     double norm_diff_A3 = (A3 - SparseMatrix<double, RowMajor>(A3.transpose())).norm();
-    std::cout << "A2 row:" << A3.rows() << "\tcolumns:" << A3.cols() << std::endl;
+    std::cout << "A3 row:" << A3.rows() << "\tcolumns:" << A3.cols() << std::endl;
     std::cout << "Check if A3 is symmectric by norm value of its difference with transpose:"
               << norm_diff_A3 << std::endl;
     // Edge detection of the original image
