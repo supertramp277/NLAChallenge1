@@ -9,3 +9,4 @@
 - As we can see, there are some values which are greater than 1 or less than 0 for A2. So we can clip them to $[0,1]$ at the step of converting to `Matrix<unsigned char>` type.
 
 - To ensure A's size is mn\*mn, we use zero padding here. And we store the generated sparse matrix by using triplet.
+  ![Example Of Zero Padding](5dd64643045da5768bca957242cb542.png)
