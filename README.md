@@ -4,7 +4,7 @@
 
 - all the matrices are by rowmajor order and normalized to $[0,1]$.
 
-- vector.mtx represents v.
+- v.mtx represents v; w.mtx represents w.
 
 - sharpen.mtx represents matrix result after sharpening filter. As we can see, there are some values which are greater than 1 or less than 0. We can clip them to $[0,1]$ at converting to `Matrix<unsigned char>` step.
 

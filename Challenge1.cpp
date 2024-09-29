@@ -90,6 +90,31 @@ void sharpenImage(const SparseMatrix<double, RowMajor> A2, int height, int width
     stbi_write_png(sharpen_image_path.c_str(), width, height, 1, sharpen_image_output.data(), width);
 }
 
+// Export the vector
+void exportVector(VectorXd data, const std::string path)
+{
+    FILE *out = fopen(path.c_str(), "w");
+    fprintf(out, "%%%%Vector Image Data Matrix coordinate real general\n");
+    fprintf(out, "size:%d\n", data.size());
+    for (int i = 0; i < data.size(); i++)
+    {
+        fprintf(out, "%f ", data(i));
+    }
+    fclose(out);
+}
+
+void exprotSparsematrix(SparseMatrix<double, RowMajor> data, const std::string path)
+{
+    if (saveMarket(data, path))
+    {
+        std::cout << "Sparse matrix A2 saved to " << path << std::endl;
+    }
+    else
+    {
+        std::cerr << "Error: Could not save sparse matrix A2 to " << path << std::endl;
+    }
+}
+/*----------------------------------Main()---------------------------------------*/
 int main(int argc, char *argv[])
 {
     if (argc < 2)
@@ -191,6 +216,16 @@ int main(int argc, char *argv[])
               << norm_diff << std::endl;
     // Sharpen the original image
     sharpenImage(A2, height, width, v);
+
+    // Export the sparse matrix A2
+    const std::string sparse_matrixA2_path = "./A2.mtx";
+    exprotSparsematrix(A2, sparse_matrixA2_path);
+
+    // Export vector v and w
+    const std::string vpath = "./v.mtx";
+    exportVector(v, vpath);
+    const std::string wpath = "./w.mtx";
+    exportVector(w, wpath);
 
     // Free memory
     stbi_image_free(image_data);
