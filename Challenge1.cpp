@@ -36,7 +36,7 @@ SparseMatrix<double, RowMajor> convolutionMatrix(const Matrix<double, Dynamic, D
                 {
                     int ci = i + ki; // contribute to n(width) shift each time when there is a vertical moving for convolution or inside the kernel
                     int cj = j + kj; // contribute just 1 shift each when there is a horizontal moving for convilution or inside the kernel
-                    if (ci >= 0 && ci < m && cj >= 0 && cj < n)
+                    if (ci >= 0 && ci < m && cj >= 0 && cj < n && kernel(ki + kernel_size / 2, kj + kernel_size / 2)!=0)
                     {
                         int index_Aj = ci * n + cj; // column number of A
                         hav2TripletList.push_back(Triplet<double>(index_Ai, index_Aj, kernel(ki + kernel_size / 2, kj + kernel_size / 2)));
