@@ -50,6 +50,47 @@ SparseMatrix<double, RowMajor> convolutionMatrix(const Matrix<double, Dynamic, D
     return A;
 }
 
+// An alternative definition for kernels H 3 by 3, easy to generalize
+SparseMatrix<double, RowMajor> convolutionMatrix2(const Matrix<double, Dynamic, Dynamic, RowMajor> &kernel, int m, int n)
+{
+    const int mn = m * n;
+    SparseMatrix<double, RowMajor> A(mn, mn);
+    std::vector<T> tripletList;
+    tripletList.reserve(mn*9);
+    for(int i=0; i<mn; ++i) 
+    {
+        // top center (not first n rows)
+        if(i-n+1>0) tripletList.push_back(T(i, i-n, kernel(0,1)));
+        // middle center (always)
+        tripletList.push_back(T(i, i, kernel(1,1)));
+        // bottom center (not last n rows)
+        if(i+n-1<mn-1) tripletList.push_back(T(i, i+n, kernel(2,1)));
+
+        if (i%n!=0) // we can go left
+        {
+            // top left
+            if(i-n>0) tripletList.push_back(T(i, i-n-1, kernel(0,0)));
+            // middle left
+            if(i>0) tripletList.push_back(T(i, i-1, kernel(1,0)));
+            // bottom left
+            if(i+n-2<mn-1) tripletList.push_back(T(i, i+n-1, kernel(2,0)));
+        }
+
+        if ( (i+1)%n != 0 ) // we can go right
+        {
+            // top right
+            if(i-n+2>0) tripletList.push_back(T(i, i-n+1, kernel(0,2)));
+            // middle right
+            if(i<mn-1) tripletList.push_back(T(i, i+1, kernel(1,2)));
+            // bottom right
+            if(i+n<mn-1) tripletList.push_back(T(i, i+n+1, kernel(2,2)));
+        }
+    }
+    A.setFromTriplets(tripletList.begin(), tripletList.end());
+    return A;
+}
+
+
 // Define the function that convert a vector to a Matrix<unsigned char> type and output it to image.png
 void outputImage(const VectorXd &vectorData, int height, int width, const std::string &path)
 {
@@ -62,11 +103,17 @@ void outputImage(const VectorXd &vectorData, int height, int width, const std::s
         }
     }
 
-    // Convert the sharpened image to grayscale and export it using stbi_write_png
-    Matrix<unsigned char, Dynamic, Dynamic, RowMajor> sharpen_image_output = output_image_matrix.unaryExpr(
+    // Convert the modified image to grayscale and export it using stbi_write_png
+    Matrix<unsigned char, Dynamic, Dynamic, RowMajor> new_image_output = output_image_matrix.unaryExpr(
         [](double pixel)
-        { return static_cast<unsigned char>(std::max(0.0, std::min(255.0, pixel * 255))); }); // ensure range [0,255]
-    stbi_write_png(path.c_str(), width, height, 1, sharpen_image_output.data(), width);
+        { 
+            return static_cast<unsigned char>(std::max(0.0, std::min(255.0, pixel * 255))); // ensure range [0,255]
+        }
+    );
+    if (stbi_write_png(path.c_str(), width, height, 1, new_image_output.data(), width) == 0) {
+        std::cerr << "Error: Could not save noised image" << std::endl;
+    }
+    std::cout << "New image saved to " << path << std::endl;
 }
 
 // Export the vector
@@ -83,7 +130,7 @@ void exportVector(VectorXd data, const std::string &path)
 }
 
 // Export a sparse matrix by saveMarket
-void exprotSparsematrix(SparseMatrix<double, RowMajor> data, const std::string &path)
+void exportSparsematrix(SparseMatrix<double, RowMajor> data, const std::string &path)
 {
     if (saveMarket(data, path))
     {
@@ -112,6 +159,7 @@ bool isPositiveDefinite(const SparseMatrix<double, RowMajor> &matrix)
     Eigen::SimplicialLLT<SparseMatrix<double, RowMajor>> cholesky(matrix);
     return cholesky.info() == Success;
 }
+
 /*-------------------------------------------------Main()-------------------------------------------------------*/
 int main(int argc, char *argv[])
 {
@@ -172,7 +220,7 @@ int main(int argc, char *argv[])
     Matrix<unsigned char, Dynamic, Dynamic, RowMajor> noised_image_output = noised_image_matrix.unaryExpr(
         [](double pixel)
         { return static_cast<unsigned char>(pixel * 255); });
-    const std::string noised_image_path = "NoisedImage.png";
+    const std::string noised_image_path = "output_NoisedImage.png";
     stbi_write_png(noised_image_path.c_str(), width, height, 1, noised_image_output.data(), width);
 
     /********************By map creat a vector reference to memeory without copying data***********************/
@@ -193,11 +241,11 @@ int main(int argc, char *argv[])
     Matrix<double, kernel_size, kernel_size, RowMajor> hav2;
     hav2.setConstant(hav2_value);
     // Perform convolution function
-    SparseMatrix<double, RowMajor> A1 = convolutionMatrix(hav2, height, width);
+    SparseMatrix<double, RowMajor> A1 = convolutionMatrix2(hav2, height, width);
     // Check the nonzero numbers
     std::cout << "A1 nonzero numbers is " << A1.nonZeros() << std::endl;
     // Smooth the noise image by using this filterImage function and passing data and path into it
-    const std::string smooth_image_path = "smoothedImage.png";
+    const std::string smooth_image_path = "output_smoothedImage.png";
     VectorXd smoothed_image_vector = A1 * w;
     outputImage(smoothed_image_vector, height, width, smooth_image_path);
 
@@ -207,7 +255,7 @@ int main(int argc, char *argv[])
         -1.0, 9.0, -3.0,
         0.0, -1.0, 0.0;
     // Perform convolution function
-    SparseMatrix<double, RowMajor> A2 = convolutionMatrix(hsh2, height, width);
+    SparseMatrix<double, RowMajor> A2 = convolutionMatrix2(hsh2, height, width);
     // Check the nonzero numbers
     std::cout << "A2 nonzero numbers is " << A2.nonZeros() << std::endl;
     // Verify if the matrix A2 is symmetric
@@ -215,7 +263,7 @@ int main(int argc, char *argv[])
                           : std::cout << "The matrix A2 is not symmetric!" << std::endl;
 
     // Sharpen the original image by matrix production
-    const std::string sharpen_image_path = "sharpenedImage.png";
+    const std::string sharpen_image_path = "output_sharpenedImage.png";
     VectorXd sharpened_image_vector = A2 * v;
     outputImage(sharpened_image_vector, height, width, sharpen_image_path);
 
@@ -225,13 +273,13 @@ int main(int argc, char *argv[])
         -1.0, 4.0, -1.0,
         0.0, -1.0, 0.0;
     // Perform convolution function
-    SparseMatrix<double, RowMajor> A3 = convolutionMatrix(hlap, height, width);
+    SparseMatrix<double, RowMajor> A3 = convolutionMatrix2(hlap, height, width);
     // Verify if the matrix A3 is symmetric
     isSymmetric(A3, "A3") ? std::cout << "The matrix A3 is symmetric!" << std::endl
                           : std::cout << "The matrix A3 is not symmetric!" << std::endl;
 
     // Edge detection of the original image
-    const std::string edgeDetection_image_path = "edgeDetectionImage.png";
+    const std::string edgeDetection_image_path = "output_edgeDetectionImage.png";
     VectorXd edgeDetected_sharpened_image_vector = A3 * v;
     outputImage(edgeDetected_sharpened_image_vector, height, width, edgeDetection_image_path);
 
@@ -239,7 +287,7 @@ int main(int argc, char *argv[])
     isPositiveDefinite(A3) ? std::cout << "The matrix A3 is positive definite!" << std::endl
                            : std::cout << "The matrix A3 is not positive definite!" << std::endl;
 
-    /**********************************Sove equation of (I + A3)*y = w****************************************/
+    /**********************************Solve equation of (I + A3)*y = w****************************************/
     VectorXd y(w.size());
     SparseMatrix<double, RowMajor> I(A3.rows(), A3.rows());
     I.setIdentity();
@@ -256,11 +304,11 @@ int main(int argc, char *argv[])
 
     // Export the sparse matrix A1 A2 A3
     const std::string sparse_matrixA1_path = "./A1.mtx";
-    exprotSparsematrix(A1, sparse_matrixA1_path);
+    exportSparsematrix(A1, sparse_matrixA1_path);
     const std::string sparse_matrixA2_path = "./A2.mtx";
-    exprotSparsematrix(A2, sparse_matrixA2_path);
+    exportSparsematrix(A2, sparse_matrixA2_path);
     const std::string sparse_matrixA3_path = "./A3.mtx";
-    exprotSparsematrix(A3, sparse_matrixA3_path);
+    exportSparsematrix(A3, sparse_matrixA3_path);
 
     // Export vector v, w and y
     const std::string vpath = "./v.mtx";
