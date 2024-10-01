@@ -2,6 +2,7 @@
 #include <iostream>
 #include <random>
 #include <unsupported/Eigen/SparseExtra>
+#include <lis.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -36,7 +37,7 @@ SparseMatrix<double, RowMajor> convolutionMatrix(const Matrix<double, Dynamic, D
                 {
                     int ci = i + ki; // contribute to n(width) shift each time when there is a vertical moving for convolution or inside the kernel
                     int cj = j + kj; // contribute just 1 shift each when there is a horizontal moving for convilution or inside the kernel
-                    if (ci >= 0 && ci < m && cj >= 0 && cj < n && kernel(ki + kernel_size / 2, kj + kernel_size / 2)!=0)
+                    if (ci >= 0 && ci < m && cj >= 0 && cj < n && kernel(ki + kernel_size / 2, kj + kernel_size / 2) != 0)
                     {
                         int index_Aj = ci * n + cj; // column number of A
                         hav2TripletList.push_back(Triplet<double>(index_Ai, index_Aj, kernel(ki + kernel_size / 2, kj + kernel_size / 2)));
@@ -56,40 +57,47 @@ SparseMatrix<double, RowMajor> convolutionMatrix2(const Matrix<double, Dynamic, 
     const int mn = m * n;
     SparseMatrix<double, RowMajor> A(mn, mn);
     std::vector<T> tripletList;
-    tripletList.reserve(mn*9);
-    for(int i=0; i<mn; ++i) 
+    tripletList.reserve(mn * 9);
+    for (int i = 0; i < mn; ++i)
     {
         // top center (not first n rows)
-        if(i-n+1>0) tripletList.push_back(T(i, i-n, kernel(0,1)));
+        if (i - n + 1 > 0)
+            tripletList.push_back(T(i, i - n, kernel(0, 1)));
         // middle center (always)
-        tripletList.push_back(T(i, i, kernel(1,1)));
+        tripletList.push_back(T(i, i, kernel(1, 1)));
         // bottom center (not last n rows)
-        if(i+n-1<mn-1) tripletList.push_back(T(i, i+n, kernel(2,1)));
+        if (i + n - 1 < mn - 1)
+            tripletList.push_back(T(i, i + n, kernel(2, 1)));
 
-        if (i%n!=0) // we can go left
+        if (i % n != 0) // we can go left
         {
             // top left
-            if(i-n>0) tripletList.push_back(T(i, i-n-1, kernel(0,0)));
+            if (i - n > 0)
+                tripletList.push_back(T(i, i - n - 1, kernel(0, 0)));
             // middle left
-            if(i>0) tripletList.push_back(T(i, i-1, kernel(1,0)));
+            if (i > 0)
+                tripletList.push_back(T(i, i - 1, kernel(1, 0)));
             // bottom left
-            if(i+n-2<mn-1) tripletList.push_back(T(i, i+n-1, kernel(2,0)));
+            if (i + n - 2 < mn - 1)
+                tripletList.push_back(T(i, i + n - 1, kernel(2, 0)));
         }
 
-        if ( (i+1)%n != 0 ) // we can go right
+        if ((i + 1) % n != 0) // we can go right
         {
             // top right
-            if(i-n+2>0) tripletList.push_back(T(i, i-n+1, kernel(0,2)));
+            if (i - n + 2 > 0)
+                tripletList.push_back(T(i, i - n + 1, kernel(0, 2)));
             // middle right
-            if(i<mn-1) tripletList.push_back(T(i, i+1, kernel(1,2)));
+            if (i < mn - 1)
+                tripletList.push_back(T(i, i + 1, kernel(1, 2)));
             // bottom right
-            if(i+n<mn-1) tripletList.push_back(T(i, i+n+1, kernel(2,2)));
+            if (i + n < mn - 1)
+                tripletList.push_back(T(i, i + n + 1, kernel(2, 2)));
         }
     }
     A.setFromTriplets(tripletList.begin(), tripletList.end());
     return A;
 }
-
 
 // Define the function that convert a vector to a Matrix<unsigned char> type and output it to image.png
 void outputImage(const VectorXd &vectorData, int height, int width, const std::string &path)
@@ -106,11 +114,11 @@ void outputImage(const VectorXd &vectorData, int height, int width, const std::s
     // Convert the modified image to grayscale and export it using stbi_write_png
     Matrix<unsigned char, Dynamic, Dynamic, RowMajor> new_image_output = output_image_matrix.unaryExpr(
         [](double pixel)
-        { 
+        {
             return static_cast<unsigned char>(std::max(0.0, std::min(255.0, pixel * 255))); // ensure range [0,255]
-        }
-    );
-    if (stbi_write_png(path.c_str(), width, height, 1, new_image_output.data(), width) == 0) {
+        });
+    if (stbi_write_png(path.c_str(), width, height, 1, new_image_output.data(), width) == 0)
+    {
         std::cerr << "Error: Could not save noised image" << std::endl;
     }
     std::cout << "New image saved to " << path << std::endl;
@@ -120,11 +128,11 @@ void outputImage(const VectorXd &vectorData, int height, int width, const std::s
 void exportVector(VectorXd data, const std::string &path)
 {
     FILE *out = fopen(path.c_str(), "w");
-    fprintf(out, "%%%%Vector Image Data Matrix coordinate real general\n");
-    fprintf(out, "size:%d\n", data.size());
+    fprintf(out, "%%%%MatrixMarket vector coordinate real general\n");
+    fprintf(out, "%d\n", data.size());
     for (int i = 0; i < data.size(); i++)
     {
-        fprintf(out, "%f ", data(i));
+        fprintf(out, "%d %f\n", i, data(i));
     }
     fclose(out);
 }
@@ -160,6 +168,65 @@ bool isPositiveDefinite(const SparseMatrix<double, RowMajor> &matrix)
     return cholesky.info() == Success;
 }
 
+// Use LIS to solve equation
+VectorXd useLisSolver(int argc, char *argv[], char *matrixFile, char *vectorFile)
+{
+
+    // Initialize LIS
+    lis_initialize(&argc, &argv);
+
+    // Create LIS matrix and vectors
+    LIS_MATRIX lis_A;
+    LIS_VECTOR lis_w, lis_x;
+    LIS_SOLVER solver;
+
+    lis_matrix_create(LIS_COMM_WORLD, &lis_A);
+    lis_input_matrix(lis_A, matrixFile);
+    lis_vector_create(LIS_COMM_WORLD, &lis_w);
+    lis_input_vector(lis_w, vectorFile);
+    lis_vector_duplicate(lis_w, &lis_x);
+
+    // Set solver options
+    lis_solver_create(&solver);
+    lis_solver_set_option(const_cast<char *>("-i bicgstab -p ilu -tol 1.0e-9"), solver);
+
+    // Solve the system
+    lis_solve(lis_A, lis_w, lis_x, solver);
+
+    // Get iteration count and residual
+    LIS_INT iterationCount;
+    double finalResidual;
+    lis_solver_get_iter(solver, &iterationCount);
+    lis_solver_get_residualnorm(solver, &finalResidual);
+
+    // Print results
+    std::cout << "Iteration count of A2*x=w is: " << iterationCount << std::endl;
+    std::cout << "Final residual of A2*x=w is: " << finalResidual << std::endl;
+
+    // Output the solution vector lis_x as a VectorXd type
+    LIS_INT local_n;
+    LIS_INT global_n;
+    lis_vector_get_size(lis_x, &local_n, &global_n);
+    VectorXd x(local_n);
+    for (LIS_INT i = 0; i < local_n; ++i)
+    {
+        double value;
+        lis_vector_get_value(lis_x, i, &value);
+        x(i) = value;
+    }
+
+    // Clean up
+    lis_solver_destroy(solver);
+    lis_matrix_destroy(lis_A);
+    lis_vector_destroy(lis_w);
+    lis_vector_destroy(lis_x);
+
+    // Return vector x
+    return x;
+
+    // Finalize LIS
+    lis_finalize();
+}
 /*-------------------------------------------------Main()-------------------------------------------------------*/
 int main(int argc, char *argv[])
 {
@@ -241,7 +308,7 @@ int main(int argc, char *argv[])
     Matrix<double, kernel_size, kernel_size, RowMajor> hav2;
     hav2.setConstant(hav2_value);
     // Perform convolution function
-    SparseMatrix<double, RowMajor> A1 = convolutionMatrix2(hav2, height, width);
+    SparseMatrix<double, RowMajor> A1 = convolutionMatrix(hav2, height, width);
     // Check the nonzero numbers
     std::cout << "A1 nonzero numbers is " << A1.nonZeros() << std::endl;
     // Smooth the noise image by using this filterImage function and passing data and path into it
@@ -255,7 +322,7 @@ int main(int argc, char *argv[])
         -1.0, 9.0, -3.0,
         0.0, -1.0, 0.0;
     // Perform convolution function
-    SparseMatrix<double, RowMajor> A2 = convolutionMatrix2(hsh2, height, width);
+    SparseMatrix<double, RowMajor> A2 = convolutionMatrix(hsh2, height, width);
     // Check the nonzero numbers
     std::cout << "A2 nonzero numbers is " << A2.nonZeros() << std::endl;
     // Verify if the matrix A2 is symmetric
@@ -273,7 +340,7 @@ int main(int argc, char *argv[])
         -1.0, 4.0, -1.0,
         0.0, -1.0, 0.0;
     // Perform convolution function
-    SparseMatrix<double, RowMajor> A3 = convolutionMatrix2(hlap, height, width);
+    SparseMatrix<double, RowMajor> A3 = convolutionMatrix(hlap, height, width);
     // Verify if the matrix A3 is symmetric
     isSymmetric(A3, "A3") ? std::cout << "The matrix A3 is symmetric!" << std::endl
                           : std::cout << "The matrix A3 is not symmetric!" << std::endl;
@@ -299,7 +366,7 @@ int main(int argc, char *argv[])
     std::cout << "The iteration count is: " << cg.iterations() << std::endl;
     std::cout << "The final residual is: " << cg.error() << std::endl;
     // Output the y vector to image
-    const std::string y_image_path = "vectorY.png";
+    const std::string y_image_path = "output_vectorY.png";
     outputImage(y, height, width, y_image_path);
 
     // Export the sparse matrix A1 A2 A3
@@ -317,6 +384,15 @@ int main(int argc, char *argv[])
     exportVector(w, wpath);
     const std::string ypath = "./y.mtx";
     exportVector(y, ypath);
+
+    /*********************Solve A2*x = w by lis*************************/  
+    char *matrixfile = const_cast<char *>("A2.mtx");
+    char *vectorfile = const_cast<char *>("w.mtx");
+    VectorXd x = useLisSolver(argc, argv, matrixfile, vectorfile);
+    const std::string xpath = "./x.mtx";
+    exportVector(x, xpath);
+    const std::string x_image_path = "output_vectorX.png";
+    outputImage(x, height, width, x_image_path);
 
     // Free memory
     stbi_image_free(image_data);
