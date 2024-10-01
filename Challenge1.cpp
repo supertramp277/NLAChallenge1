@@ -60,30 +60,30 @@ SparseMatrix<double, RowMajor> convolutionMatrix2(const Matrix<double, Dynamic, 
     for(int i=0; i<mn; ++i) 
     {
         // top center (not first n rows)
-        if(i-n+1>0) tripletList.push_back(T(i, i-n, kernel(0,1)));
+        if(i-n+1>0 && kernel(0,1)!=0) tripletList.push_back(T(i, i-n, kernel(0,1)));
         // middle center (always)
-        tripletList.push_back(T(i, i, kernel(1,1)));
+        if(kernel(1,1)!=0) tripletList.push_back(T(i, i, kernel(1,1)));
         // bottom center (not last n rows)
-        if(i+n-1<mn-1) tripletList.push_back(T(i, i+n, kernel(2,1)));
+        if(i+n-1<mn-1 && kernel(2,1)!=0) tripletList.push_back(T(i, i+n, kernel(2,1)));
 
         if (i%n!=0) // we can go left
         {
             // top left
-            if(i-n>0) tripletList.push_back(T(i, i-n-1, kernel(0,0)));
+            if(i-n>0 && kernel(0,0)!=0) tripletList.push_back(T(i, i-n-1, kernel(0,0)));
             // middle left
-            if(i>0) tripletList.push_back(T(i, i-1, kernel(1,0)));
+            if(i>0 && kernel(1,0)!=0) tripletList.push_back(T(i, i-1, kernel(1,0)));
             // bottom left
-            if(i+n-2<mn-1) tripletList.push_back(T(i, i+n-1, kernel(2,0)));
+            if(i+n-2<mn-1 && kernel(2,0)!=0) tripletList.push_back(T(i, i+n-1, kernel(2,0)));
         }
 
         if ( (i+1)%n != 0 ) // we can go right
         {
             // top right
-            if(i-n+2>0) tripletList.push_back(T(i, i-n+1, kernel(0,2)));
+            if(i-n+2>0 && kernel(0,2)!=0) tripletList.push_back(T(i, i-n+1, kernel(0,2)));
             // middle right
-            if(i<mn-1) tripletList.push_back(T(i, i+1, kernel(1,2)));
+            if(i<mn-1 && kernel(1,2)!=0) tripletList.push_back(T(i, i+1, kernel(1,2)));
             // bottom right
-            if(i+n<mn-1) tripletList.push_back(T(i, i+n+1, kernel(2,2)));
+            if(i+n<mn-1 && kernel(2,2)!=0) tripletList.push_back(T(i, i+n+1, kernel(2,2)));
         }
     }
     A.setFromTriplets(tripletList.begin(), tripletList.end());
@@ -111,9 +111,9 @@ void outputImage(const VectorXd &vectorData, int height, int width, const std::s
         }
     );
     if (stbi_write_png(path.c_str(), width, height, 1, new_image_output.data(), width) == 0) {
-        std::cerr << "Error: Could not save noised image" << std::endl;
+        std::cerr << "Error: Could not save modified image" << std::endl;
     }
-    std::cout << "New image saved to " << path << std::endl;
+    std::cout << "New image saved to " << path << "\n" << std::endl;
 }
 
 // Export the vector
@@ -147,8 +147,8 @@ bool isSymmetric(SparseMatrix<double, RowMajor> &matrix, const std::string &matr
 {
     double tolerance = 1e-10;
     double norm_diff = (matrix - SparseMatrix<double, RowMajor>(matrix.transpose())).norm();
-    std::cout << matrixName << "\trow:" << matrix.rows() << "\tcolumns:" << matrix.cols() << std::endl;
-    std::cout << "Check if " << matrixName << " is symmectric by norm value of its difference with transpose:"
+    std::cout << matrixName << "\trow: " << matrix.rows() << "\tcolumns: " << matrix.cols() << std::endl;
+    std::cout << "Check if " << matrixName << " is symmectric by norm value of its difference with transpose: "
               << norm_diff << std::endl;
     return norm_diff < tolerance;
 }
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::cout << "Image loaded: " << width << "x" << height << " with " << channels << " channels." << std::endl;
+    std::cout << "Image " << argv[1] << " loaded: " << height << "x" << width << " pixels with " << channels << " channels" << std::endl;
 
     /****************Convert the image_data to MatrixXd form, each element value [0,1]*******************/
     // Attention! if use MatrixXd here its columnmajor by default, we prefere rowmajor
@@ -197,8 +197,8 @@ int main(int argc, char *argv[])
     }
 
     // Report the size of the matrix
-    std::cout << "The Image Matrix Size Is: " << original_image_matrix.rows() << "*" << original_image_matrix.cols()
-              << "=" << original_image_matrix.size() << std::endl;
+    std::cout << "The original image " << argv[1] << " in matrix form has dimension: " << original_image_matrix.rows() << " rows x " << original_image_matrix.cols()
+              << " cols = " << original_image_matrix.size() << "\n" << std::endl;
 
     /***********************************Introduce noise and export****************************************/
     Matrix<double, Dynamic, Dynamic, RowMajor> noised_image_matrix(height, width);
@@ -221,7 +221,12 @@ int main(int argc, char *argv[])
         [](double pixel)
         { return static_cast<unsigned char>(pixel * 255); });
     const std::string noised_image_path = "output_NoisedImage.png";
-    stbi_write_png(noised_image_path.c_str(), width, height, 1, noised_image_output.data(), width);
+    if (stbi_write_png(noised_image_path.c_str(), width, height, 1,
+                        noised_image_output.data(), width) == 0) {
+        std::cerr << "Error: Could not save noised image" << std::endl;
+        return 1;
+    }
+    std::cout << "New image saved to " << noised_image_path << "\n" << std::endl;
 
     /********************By map creat a vector reference to memeory without copying data***********************/
     // It is columnmajor by default, however, we've already declared our data rowmajor so here rowmajor as well.
@@ -243,63 +248,63 @@ int main(int argc, char *argv[])
     // Perform convolution function
     SparseMatrix<double, RowMajor> A1 = convolutionMatrix2(hav2, height, width);
     // Check the nonzero numbers
-    std::cout << "A1 nonzero numbers is " << A1.nonZeros() << std::endl;
+    std::cout << "A1 nonzero number is: " << A1.nonZeros() << std::endl;
     // Smooth the noise image by using this filterImage function and passing data and path into it
-    const std::string smooth_image_path = "output_smoothedImage.png";
+    const std::string smooth_image_path = "output_SmoothedImage.png";
     VectorXd smoothed_image_vector = A1 * w;
     outputImage(smoothed_image_vector, height, width, smooth_image_path);
 
     // Create the kernel H_{sh2}}
     Matrix<double, kernel_size, kernel_size, RowMajor> hsh2;
     hsh2 << 0.0, -3.0, 0.0,
-        -1.0, 9.0, -3.0,
-        0.0, -1.0, 0.0;
+           -1.0, 9.0, -3.0,
+            0.0, -1.0, 0.0;
     // Perform convolution function
     SparseMatrix<double, RowMajor> A2 = convolutionMatrix2(hsh2, height, width);
     // Check the nonzero numbers
-    std::cout << "A2 nonzero numbers is " << A2.nonZeros() << std::endl;
+    std::cout << "A2 nonzero number is: " << A2.nonZeros() << std::endl;
     // Verify if the matrix A2 is symmetric
     isSymmetric(A2, "A2") ? std::cout << "The matrix A2 is symmetric!" << std::endl
                           : std::cout << "The matrix A2 is not symmetric!" << std::endl;
 
     // Sharpen the original image by matrix production
-    const std::string sharpen_image_path = "output_sharpenedImage.png";
+    const std::string sharpen_image_path = "output_SharpenedImage.png";
     VectorXd sharpened_image_vector = A2 * v;
     outputImage(sharpened_image_vector, height, width, sharpen_image_path);
 
     // Create the kernel H_{sh2}}
     Matrix<double, kernel_size, kernel_size, RowMajor> hlap;
     hlap << 0.0, -1.0, 0.0,
-        -1.0, 4.0, -1.0,
-        0.0, -1.0, 0.0;
+           -1.0, 4.0, -1.0,
+            0.0, -1.0, 0.0;
     // Perform convolution function
     SparseMatrix<double, RowMajor> A3 = convolutionMatrix2(hlap, height, width);
     // Verify if the matrix A3 is symmetric
     isSymmetric(A3, "A3") ? std::cout << "The matrix A3 is symmetric!" << std::endl
                           : std::cout << "The matrix A3 is not symmetric!" << std::endl;
-
-    // Edge detection of the original image
-    const std::string edgeDetection_image_path = "output_edgeDetectionImage.png";
-    VectorXd edgeDetected_sharpened_image_vector = A3 * v;
-    outputImage(edgeDetected_sharpened_image_vector, height, width, edgeDetection_image_path);
-
+    
     // Check if A3 is positive definite as well
     isPositiveDefinite(A3) ? std::cout << "The matrix A3 is positive definite!" << std::endl
                            : std::cout << "The matrix A3 is not positive definite!" << std::endl;
+
+    // Edge detection of the original image
+    const std::string edgeDetection_image_path = "output_EdgeDetectionImage.png";
+    VectorXd edgeDetected_sharpened_image_vector = A3 * v;
+    outputImage(edgeDetected_sharpened_image_vector, height, width, edgeDetection_image_path);
 
     /**********************************Solve equation of (I + A3)*y = w****************************************/
     VectorXd y(w.size());
     SparseMatrix<double, RowMajor> I(A3.rows(), A3.rows());
     I.setIdentity();
     SparseMatrix<double, RowMajor> A3_Plus_I = A3 + I;
-    ConjugateGradient<SparseMatrix<double, RowMajor>, Lower | Upper> cg; // A3 should be spd
+    ConjugateGradient<SparseMatrix<double, RowMajor>, Lower | Upper> cg; // A3 is spd
     cg.setTolerance(1e-10);
     cg.compute(A3_Plus_I);
     y = cg.solve(w);
     std::cout << "The iteration count is: " << cg.iterations() << std::endl;
     std::cout << "The final residual is: " << cg.error() << std::endl;
     // Output the y vector to image
-    const std::string y_image_path = "vectorY.png";
+    const std::string y_image_path = "output_VectorY.png";
     outputImage(y, height, width, y_image_path);
 
     // Export the sparse matrix A1 A2 A3
