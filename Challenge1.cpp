@@ -120,11 +120,11 @@ void outputImage(const VectorXd &vectorData, int height, int width, const std::s
 void exportVector(VectorXd data, const std::string &path)
 {
     FILE *out = fopen(path.c_str(), "w");
-    fprintf(out, "%%%%Vector Image Data Matrix coordinate real general\n");
-    fprintf(out, "size:%d\n", data.size());
+    fprintf(out, "%%%%MatrixMarket vector coordinate real general\n");
+    fprintf(out, "%d\n", data.size());
     for (int i = 0; i < data.size(); i++)
     {
-        fprintf(out, "%f ", data(i));
+        fprintf(out, "%d %f\n", i, data(i));
     }
     fclose(out);
 }
