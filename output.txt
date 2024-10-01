@@ -1,0 +1,30 @@
+Image einstein.jpg loaded: 341x256 pixels with 1 channels
+The original image einstein.jpg in matrix form has dimension: 341 rows x 256 cols = 87296
+
+New image saved to output_NoisedImage.png
+
+Original image vector v's size: 87296
+Noisy image vector w's size: 87296
+Euclidean norm of v is: 139.516
+A1 nonzero number is: 782086
+New image saved to output_SmoothedImage.png
+
+A2 nonzero number is: 435286
+A2	row: 87296	columns: 87296
+Check if A2 is symmectric by norm value of its difference with transpose: 1179.81
+The matrix A2 is not symmetric!
+New image saved to output_SharpenedImage.png
+
+A3	row: 87296	columns: 87296
+Check if A3 is symmectric by norm value of its difference with transpose: 0
+The matrix A3 is symmetric!
+The matrix A3 is positive definite!
+New image saved to output_EdgeDetectionImage.png
+
+The iteration count is: 32
+The final residual is: 7.36466e-11
+New image saved to output_VectorY.png
+
+Sparse matrix A saved to ./A1.mtx
+Sparse matrix A saved to ./A2.mtx
+Sparse matrix A saved to ./A3.mtx
