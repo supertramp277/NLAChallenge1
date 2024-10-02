@@ -36,7 +36,7 @@ SparseMatrix<double, RowMajor> convolutionMatrix(const Matrix<double, Dynamic, D
                 {
                     int ci = i + ki; // contribute to n(width) shift each time when there is a vertical moving for convolution or inside the kernel
                     int cj = j + kj; // contribute just 1 shift each when there is a horizontal moving for convilution or inside the kernel
-                    if (ci >= 0 && ci < m && cj >= 0 && cj < n && kernel(ki + kernel_size / 2, kj + kernel_size / 2)!=0)
+                    if (ci >= 0 && ci < m && cj >= 0 && cj < n && kernel(ki + kernel_size / 2, kj + kernel_size / 2) != 0)
                     {
                         int index_Aj = ci * n + cj; // column number of A
                         hav2TripletList.push_back(Triplet<double>(index_Ai, index_Aj, kernel(ki + kernel_size / 2, kj + kernel_size / 2)));
@@ -56,43 +56,51 @@ SparseMatrix<double, RowMajor> convolutionMatrix2(const Matrix<double, Dynamic, 
     const int mn = m * n;
     SparseMatrix<double, RowMajor> A(mn, mn);
     std::vector<T> tripletList;
-    tripletList.reserve(mn*9);
-    for(int i=0; i<mn; ++i) 
+    tripletList.reserve(mn * 9);
+    for (int i = 0; i < mn; ++i)
     {
         // top center (not first n rows)
-        if(i-n+1>0 && kernel(0,1)!=0) tripletList.push_back(T(i, i-n, kernel(0,1)));
+        if (i - n + 1 > 0 && kernel(0, 1) != 0)
+            tripletList.push_back(T(i, i - n, kernel(0, 1)));
         // middle center (always)
-        if(kernel(1,1)!=0) tripletList.push_back(T(i, i, kernel(1,1)));
+        if (kernel(1, 1) != 0)
+            tripletList.push_back(T(i, i, kernel(1, 1)));
         // bottom center (not last n rows)
-        if(i+n-1<mn-1 && kernel(2,1)!=0) tripletList.push_back(T(i, i+n, kernel(2,1)));
+        if (i + n - 1 < mn - 1 && kernel(2, 1) != 0)
+            tripletList.push_back(T(i, i + n, kernel(2, 1)));
 
-        if (i%n!=0) // we can go left
+        if (i % n != 0) // we can go left
         {
             // top left
-            if(i-n>0 && kernel(0,0)!=0) tripletList.push_back(T(i, i-n-1, kernel(0,0)));
+            if (i - n > 0 && kernel(0, 0) != 0)
+                tripletList.push_back(T(i, i - n - 1, kernel(0, 0)));
             // middle left
-            if(i>0 && kernel(1,0)!=0) tripletList.push_back(T(i, i-1, kernel(1,0)));
+            if (i > 0 && kernel(1, 0) != 0)
+                tripletList.push_back(T(i, i - 1, kernel(1, 0)));
             // bottom left
-            if(i+n-2<mn-1 && kernel(2,0)!=0) tripletList.push_back(T(i, i+n-1, kernel(2,0)));
+            if (i + n - 2 < mn - 1 && kernel(2, 0) != 0)
+                tripletList.push_back(T(i, i + n - 1, kernel(2, 0)));
         }
 
-        if ( (i+1)%n != 0 ) // we can go right
+        if ((i + 1) % n != 0) // we can go right
         {
             // top right
-            if(i-n+2>0 && kernel(0,2)!=0) tripletList.push_back(T(i, i-n+1, kernel(0,2)));
+            if (i - n + 2 > 0 && kernel(0, 2) != 0)
+                tripletList.push_back(T(i, i - n + 1, kernel(0, 2)));
             // middle right
-            if(i<mn-1 && kernel(1,2)!=0) tripletList.push_back(T(i, i+1, kernel(1,2)));
+            if (i < mn - 1 && kernel(1, 2) != 0)
+                tripletList.push_back(T(i, i + 1, kernel(1, 2)));
             // bottom right
-            if(i+n<mn-1 && kernel(2,2)!=0) tripletList.push_back(T(i, i+n+1, kernel(2,2)));
+            if (i + n < mn - 1 && kernel(2, 2) != 0)
+                tripletList.push_back(T(i, i + n + 1, kernel(2, 2)));
         }
     }
     A.setFromTriplets(tripletList.begin(), tripletList.end());
     return A;
 }
 
-
 // Define the function that convert a vector to a Matrix<unsigned char> type and output it to image.png
-void outputImage(const VectorXd &vectorData, int height, int width, const std::string &path)
+void outputVectorImage(const VectorXd &vectorData, int height, int width, const std::string &path)
 {
     Matrix<double, Dynamic, Dynamic, RowMajor> output_image_matrix(height, width);
     for (int i = 0; i < height; i++)
@@ -106,14 +114,15 @@ void outputImage(const VectorXd &vectorData, int height, int width, const std::s
     // Convert the modified image to grayscale and export it using stbi_write_png
     Matrix<unsigned char, Dynamic, Dynamic, RowMajor> new_image_output = output_image_matrix.unaryExpr(
         [](double pixel)
-        { 
+        {
             return static_cast<unsigned char>(std::max(0.0, std::min(255.0, pixel * 255))); // ensure range [0,255]
-        }
-    );
-    if (stbi_write_png(path.c_str(), width, height, 1, new_image_output.data(), width) == 0) {
+        });
+    if (stbi_write_png(path.c_str(), width, height, 1, new_image_output.data(), width) == 0)
+    {
         std::cerr << "Error: Could not save modified image" << std::endl;
     }
-    std::cout << "New image saved to " << path << "\n" << std::endl;
+    std::cout << "New image saved to " << path << "\n"
+              << std::endl;
 }
 
 // Export the vector
@@ -160,6 +169,64 @@ bool isPositiveDefinite(const SparseMatrix<double, RowMajor> &matrix)
     return cholesky.info() == Success;
 }
 
+// 1. Lis generated mtx file is marketvector format, but loadMarkerVector() method doesn't match (it needs MatrixMarket matrix array fromat);
+// 2. So we use our own menthod to read data from mtx file here, we read each line of the file and put it value into our Eigen::VectorXd data.
+Eigen::VectorXd readMarketVector(const std::string &filename)
+{
+    std::ifstream file(filename);
+    if (!file.is_open())
+    {
+        std::cerr << "Error opening file: " << filename << std::endl;
+        return Eigen::VectorXd();
+    }
+
+    std::string line;
+    std::vector<double> values;
+    int size;
+
+    // Skip the header lines
+    std::getline(file, line);     // %%MatrixMarket vector coordinate real general
+    std::getline(file, line);     // Number of elements
+    std::istringstream iss(line); // For get size of data
+    if (!(iss >> size))
+    {
+        std::cerr << "Error reading size from file: " << filename << std::endl;
+        return Eigen::VectorXd();
+    } // report error when size is 0
+
+    // Read the vector data line by line
+    while (std::getline(file, line))
+    {
+        std::istringstream iss(line);
+        int index;
+        double value;
+        if (!(iss >> index >> value))
+        {
+            std::cerr << "Error reading value from file: " << filename << std::endl;
+            return Eigen::VectorXd();
+        }
+        values.push_back(value);
+    }
+
+    file.close();
+
+    // Check if the number of values having been read matches the expected size
+    if (values.size() != size)
+    {
+        std::cerr << "Mismatch in vector size: expected " << size << ", got " << values.size() << std::endl;
+        return Eigen::VectorXd();
+    }
+
+    // Generate the Eigen::VectorXd type vector
+    Eigen::VectorXd vec(size);
+    for (int i = 0; i < size; ++i)
+    {
+        vec(i) = values[i];
+    }
+
+    return vec;
+}
+
 /*-------------------------------------------------Main()-------------------------------------------------------*/
 int main(int argc, char *argv[])
 {
@@ -198,7 +265,8 @@ int main(int argc, char *argv[])
 
     // Report the size of the matrix
     std::cout << "The original image " << argv[1] << " in matrix form has dimension: " << original_image_matrix.rows() << " rows x " << original_image_matrix.cols()
-              << " cols = " << original_image_matrix.size() << "\n" << std::endl;
+              << " cols = " << original_image_matrix.size() << "\n"
+              << std::endl;
 
     /***********************************Introduce noise and export****************************************/
     Matrix<double, Dynamic, Dynamic, RowMajor> noised_image_matrix(height, width);
@@ -222,13 +290,16 @@ int main(int argc, char *argv[])
         { return static_cast<unsigned char>(pixel * 255); });
     const std::string noised_image_path = "output_NoisedImage.png";
     if (stbi_write_png(noised_image_path.c_str(), width, height, 1,
-                        noised_image_output.data(), width) == 0) {
+                       noised_image_output.data(), width) == 0)
+    {
         std::cerr << "Error: Could not save noised image" << std::endl;
         return 1;
     }
-    std::cout << "New image saved to " << noised_image_path << "\n" << std::endl;
+    std::cout << "New image saved to " << noised_image_path << "\n"
+              << std::endl;
+    /*************************************************end****************************************************/
 
-    /********************By map creat a vector reference to memeory without copying data***********************/
+    /*-------------------By map creat a vector reference to memeory without copying data----------------------*/
     // It is columnmajor by default, however, we've already declared our data rowmajor so here rowmajor as well.
     Map<VectorXd> v(original_image_matrix.data(), original_image_matrix.size());
     Map<VectorXd> w(noised_image_matrix.data(), noised_image_matrix.size());
@@ -252,13 +323,13 @@ int main(int argc, char *argv[])
     // Smooth the noise image by using this filterImage function and passing data and path into it
     const std::string smooth_image_path = "output_SmoothedImage.png";
     VectorXd smoothed_image_vector = A1 * w;
-    outputImage(smoothed_image_vector, height, width, smooth_image_path);
+    outputVectorImage(smoothed_image_vector, height, width, smooth_image_path);
 
     // Create the kernel H_{sh2}}
     Matrix<double, kernel_size, kernel_size, RowMajor> hsh2;
     hsh2 << 0.0, -3.0, 0.0,
-           -1.0, 9.0, -3.0,
-            0.0, -1.0, 0.0;
+        -1.0, 9.0, -3.0,
+        0.0, -1.0, 0.0;
     // Perform convolution function
     SparseMatrix<double, RowMajor> A2 = convolutionMatrix2(hsh2, height, width);
     // Check the nonzero numbers
@@ -270,27 +341,28 @@ int main(int argc, char *argv[])
     // Sharpen the original image by matrix production
     const std::string sharpen_image_path = "output_SharpenedImage.png";
     VectorXd sharpened_image_vector = A2 * v;
-    outputImage(sharpened_image_vector, height, width, sharpen_image_path);
+    outputVectorImage(sharpened_image_vector, height, width, sharpen_image_path);
 
     // Create the kernel H_{sh2}}
     Matrix<double, kernel_size, kernel_size, RowMajor> hlap;
     hlap << 0.0, -1.0, 0.0,
-           -1.0, 4.0, -1.0,
-            0.0, -1.0, 0.0;
+        -1.0, 4.0, -1.0,
+        0.0, -1.0, 0.0;
     // Perform convolution function
     SparseMatrix<double, RowMajor> A3 = convolutionMatrix2(hlap, height, width);
     // Verify if the matrix A3 is symmetric
     isSymmetric(A3, "A3") ? std::cout << "The matrix A3 is symmetric!" << std::endl
                           : std::cout << "The matrix A3 is not symmetric!" << std::endl;
-    
+
     // Check if A3 is positive definite as well
     isPositiveDefinite(A3) ? std::cout << "The matrix A3 is positive definite!" << std::endl
                            : std::cout << "The matrix A3 is not positive definite!" << std::endl;
 
     // Edge detection of the original image
     const std::string edgeDetection_image_path = "output_EdgeDetectionImage.png";
-    VectorXd edgeDetected_sharpened_image_vector = A3 * v;
-    outputImage(edgeDetected_sharpened_image_vector, height, width, edgeDetection_image_path);
+    VectorXd edgeDetected_image_vector = A3 * v;
+    outputVectorImage(edgeDetected_image_vector, height, width, edgeDetection_image_path);
+    /************************************************end*******************************************************/
 
     /**********************************Solve equation of (I + A3)*y = w****************************************/
     VectorXd y(w.size());
@@ -305,7 +377,8 @@ int main(int argc, char *argv[])
     std::cout << "The final residual is: " << cg.error() << std::endl;
     // Output the y vector to image
     const std::string y_image_path = "output_VectorY.png";
-    outputImage(y, height, width, y_image_path);
+    outputVectorImage(y, height, width, y_image_path);
+    /************************************************end*******************************************************/
 
     // Export the sparse matrix A1 A2 A3
     const std::string sparse_matrixA1_path = "./A1.mtx";
@@ -322,6 +395,13 @@ int main(int argc, char *argv[])
     exportVector(w, wpath);
     const std::string ypath = "./y.mtx";
     exportVector(y, ypath);
+
+    /**********************************Solve equation of A2*x = w****************************************/
+    const std::string xMtxPath = "x.mtx";
+    VectorXd x = readMarketVector(xMtxPath); // Read x.mtx file data and output it as image
+    const std::string x_image_path = "output_VectorX.png";
+    outputVectorImage(x, height, width, x_image_path);
+    /*********************************************end****************************************************/
 
     // Free memory
     stbi_image_free(image_data);
