@@ -37,12 +37,12 @@ The output results are shown in files below:
 
 ---
 
-| Noised Image | Smoothed Image | Sharpened Image |
-|--------------|----------------|-----------------|
+| Noised Image                            | Smoothed Image                              | Sharpened Image                               |
+| --------------------------------------- | ------------------------------------------- | --------------------------------------------- |
 | ![Noised Image](output_NoisedImage.png) | ![Smoothed Image](output_SmoothedImage.png) | ![Sharpened Image](output_SharpenedImage.png) |
 
-| Edgedetected Image | VectorX Image | VectorY Image |
-|--------------|----------------|-----------------|
+| Edgedetected Image                                   | VectorX Image                         | VectorY Image                         |
+| ---------------------------------------------------- | ------------------------------------- | ------------------------------------- |
 | ![Edgedetected Image](output_EdgeDetectionImage.png) | ![output_VectorX](output_VectorX.png) | ![output_VectorY](output_VectorY.png) |
 
 ## 2. Explanation
@@ -50,6 +50,30 @@ The output results are shown in files below:
 - Use 256 pixel image _einstein.jpg_ as input, print related matrix manually for checking, and output the generated image.
 
 - **all the matrices are by rowmajor order and normalized to $[0,1]$ when processing.** And convert to `Matrix<unsigned char>` when output.
+
+- **Attention! All the output vectors are stored by this format below:**
+
+  ```
+  %%MatrixMarket vector coordinate real general
+  nonzeros (like: 87296)
+  index value (like: 1 0.123; index based from 1 instead of 0)
+  ```
+
+  **the most important thing is that the index is based from 1 instead of 0.** Because the LIS `test1.h` file's default input vector file format is like this, take `testvec0.mtx` for example:
+
+  ```
+  %%MatrixMarket vector coordinate real general
+  100
+  1  2.00000000000000000000e+000
+  2  1.00000000000000000000e+000
+  3  1.00000000000000000000e+000
+  4  1.00000000000000000000e+000
+  5  1.00000000000000000000e+000
+  6  1.00000000000000000000e+000
+  7  1.00000000000000000000e+000
+  8  1.00000000000000000000e+000
+  9  1.00000000000000000000e+000
+  ```
 
 - v.mtx represents $v$; w.mtx represents $w$; x.mtx represents $x$; y.mtx represents $y$. _A1.mtx, A2.mtx, A3.mtx_ are repectively the $H_{av2}$, $H_{sh2}$ and $H_{lap}$ related convolution matrices.
 

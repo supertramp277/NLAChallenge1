@@ -133,7 +133,7 @@ void exportVector(VectorXd data, const std::string &path)
     fprintf(out, "%d\n", data.size());
     for (int i = 0; i < data.size(); i++)
     {
-        fprintf(out, "%d %f\n", i, data(i));
+        fprintf(out, "%d %f\n", i + 1, data(i)); // here index from 1
     }
     fclose(out);
 }
@@ -171,30 +171,32 @@ bool isPositiveDefinite(const SparseMatrix<double, RowMajor> &matrix)
 
 // 1. Lis generated mtx file is marketvector format, but loadMarkerVector() method doesn't match (it needs MatrixMarket matrix array fromat);
 // 2. So we use our own menthod to read data from mtx file here, we read each line of the file and put it value into our Eigen::VectorXd data.
-Eigen::VectorXd readMarketVector(const std::string &filename)
+// Function to read a vector from a Matrix Market file with 0-based indexing
+VectorXd readMarketVector(const std::string &filename)
 {
     std::ifstream file(filename);
     if (!file.is_open())
     {
         std::cerr << "Error opening file: " << filename << std::endl;
-        return Eigen::VectorXd();
+        return VectorXd();
     }
 
     std::string line;
-    std::vector<double> values;
-    int size;
-
     // Skip the header lines
-    std::getline(file, line);     // %%MatrixMarket vector coordinate real general
-    std::getline(file, line);     // Number of elements
-    std::istringstream iss(line); // For get size of data
+    std::getline(file, line); // %%MatrixMarket vector coordinate real general
+    std::getline(file, line); // Dimensions or size of the vector
+
+    int size;
+    std::istringstream iss(line);
     if (!(iss >> size))
     {
         std::cerr << "Error reading size from file: " << filename << std::endl;
-        return Eigen::VectorXd();
-    } // report error when size is 0
+        return VectorXd();
+    }
 
-    // Read the vector data line by line
+    VectorXd vectorX(size);
+
+    // Read the vector data line by line, data index staring from 1
     while (std::getline(file, line))
     {
         std::istringstream iss(line);
@@ -203,28 +205,14 @@ Eigen::VectorXd readMarketVector(const std::string &filename)
         if (!(iss >> index >> value))
         {
             std::cerr << "Error reading value from file: " << filename << std::endl;
-            return Eigen::VectorXd();
+            return VectorXd();
         }
-        values.push_back(value);
+        // Convert 1-based to 0-based indexing here, because our VectorXd type stores data from 0
+        vectorX(index - 1) = value;
     }
 
     file.close();
-
-    // Check if the number of values having been read matches the expected size
-    if (values.size() != size)
-    {
-        std::cerr << "Mismatch in vector size: expected " << size << ", got " << values.size() << std::endl;
-        return Eigen::VectorXd();
-    }
-
-    // Generate the Eigen::VectorXd type vector
-    Eigen::VectorXd vec(size);
-    for (int i = 0; i < size; ++i)
-    {
-        vec(i) = values[i];
-    }
-
-    return vec;
+    return vectorX;
 }
 
 /*-------------------------------------------------Main()-------------------------------------------------------*/
