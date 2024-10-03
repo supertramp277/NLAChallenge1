@@ -21,12 +21,25 @@ The matrix A3 is symmetric!
 The matrix A3 is positive definite!
 New image saved to output_EdgeDetectionImage.png
 
+Conjugate gradient method computating (I + A3) * y = w ...
 The iteration count is: 32
 The final residual is: 7.36466e-11
 New image saved to output_VectorY.png
 
-Sparse matrix A saved to ./A1.mtx
-Sparse matrix A saved to ./A2.mtx
-Sparse matrix A saved to ./A3.mtx
+Spars matrix saved to ./A1.mtx
+Spars matrix saved to ./A2.mtx
+Spars matrix saved to ./A3.mtx
+
+Vector v saved to ./v.mtx
+Vector w saved to ./w.mtx
+Vector y saved to ./y.mtx
+
 New image saved to output_VectorX.png
+
+New image saved to output_VectorW_check.png
+
+Vector w_check saved to ./w_check.mtx
+
+Spars matrix saved to ./A3_plus_I.mtx
+New image saved to output_VectorY_check.png
 

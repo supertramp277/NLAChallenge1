@@ -11,7 +11,7 @@
 using namespace Eigen;
 typedef Eigen::Triplet<double> T;
 
-/******************This is the defined functions field like convolution, filter, export matrix, etc***********************/
+/****************** This is the defined functions field like convolution, filter, export matrix, etc ***********************/
 // Definite the convolution function by matrix production, return the sparsematrix mn*mn
 SparseMatrix<double, RowMajor> convolutionMatrix(const Matrix<double, Dynamic, Dynamic, RowMajor> &kernel, int height, int width)
 {
@@ -143,11 +143,11 @@ void exportSparsematrix(SparseMatrix<double, RowMajor> data, const std::string &
 {
     if (saveMarket(data, path))
     {
-        std::cout << "Sparse matrix A saved to " << path << std::endl;
+        std::cout << "Spars matrix saved to " << path << std::endl;
     }
     else
     {
-        std::cerr << "Error: Could not save sparse matrix A to " << path << std::endl;
+        std::cerr << "Error: Could not save sparse matrix to " << path << std::endl;
     }
 }
 
@@ -215,7 +215,7 @@ VectorXd readMarketVector(const std::string &filename)
     return vectorX;
 }
 
-/*-------------------------------------------------Main()-------------------------------------------------------*/
+/*------------------------------------------------- Main() -------------------------------------------------------*/
 int main(int argc, char *argv[])
 {
     if (argc < 2)
@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
 
     const char *input_image_path = argv[1];
 
-    /*****************************Load the image using stb_image****************************/
+    /***************************** Load the image using stb_image ****************************/
     int width, height, channels;
     // for greyscale images force to load only one channel
     unsigned char *image_data = stbi_load(input_image_path, &width, &height, &channels, 1);
@@ -238,8 +238,8 @@ int main(int argc, char *argv[])
 
     std::cout << "Image " << argv[1] << " loaded: " << height << "x" << width << " pixels with " << channels << " channels" << std::endl;
 
-    /****************Convert the image_data to MatrixXd form, each element value [0,1]*******************/
-    // Attention! if use MatrixXd here its columnmajor by default, we prefere rowmajor
+    /**************** Convert the image_data to MatrixXd form, each element value [0,1] *******************/
+    // Attention! We use RowMajor notation
     Matrix<double, Dynamic, Dynamic, RowMajor> original_image_matrix(height, width);
 
     for (int i = 0; i < height; i++)
@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
               << " cols = " << original_image_matrix.size() << "\n"
               << std::endl;
 
-    /***********************************Introduce noise and export****************************************/
+    /*********************************** Introduce noise and export ****************************************/
     Matrix<double, Dynamic, Dynamic, RowMajor> noised_image_matrix(height, width);
     // Uniform random number generator for noise
     std::default_random_engine generator;
@@ -285,10 +285,10 @@ int main(int argc, char *argv[])
     }
     std::cout << "New image saved to " << noised_image_path << "\n"
               << std::endl;
-    /*************************************************end****************************************************/
+    /************************************************* end ****************************************************/
 
-    /*-------------------By map creat a vector reference to memeory without copying data----------------------*/
-    // It is columnmajor by default, however, we've already declared our data rowmajor so here rowmajor as well.
+    /******************** By map creat a vector reference to memeory without copying data *********************/
+    // It is columnmajor by default, however, we've already declared our data RowMajor so here RowMajor as well.
     Map<VectorXd> v(original_image_matrix.data(), original_image_matrix.size());
     Map<VectorXd> w(noised_image_matrix.data(), noised_image_matrix.size());
 
@@ -297,7 +297,7 @@ int main(int argc, char *argv[])
     std::cout << "Noisy image vector w's size: " << w.size() << std::endl;
     std::cout << "Euclidean norm of v is: " << v.norm() << std::endl;
 
-    /****************************Create different kernels and perform convolution*****************************/
+    /**************************** Create different kernels and perform convolutions *****************************/
     const int kernel_size = 3;
 
     // Create the kernel H_{av2}
@@ -350,23 +350,24 @@ int main(int argc, char *argv[])
     const std::string edgeDetection_image_path = "output_EdgeDetectionImage.png";
     VectorXd edgeDetected_image_vector = A3 * v;
     outputVectorImage(edgeDetected_image_vector, height, width, edgeDetection_image_path);
-    /************************************************end*******************************************************/
+    /************************************************ end *******************************************************/
 
-    /**********************************Solve equation of (I + A3)*y = w****************************************/
+    /********************************** Solve equation of (I + A3) * y = w ****************************************/
     VectorXd y(w.size());
     SparseMatrix<double, RowMajor> I(A3.rows(), A3.rows());
     I.setIdentity();
     SparseMatrix<double, RowMajor> A3_Plus_I = A3 + I;
     ConjugateGradient<SparseMatrix<double, RowMajor>, Lower | Upper> cg; // A3 is spd
-    cg.setTolerance(1e-10);
+    cg.setTolerance(1.0e-10);
     cg.compute(A3_Plus_I);
     y = cg.solve(w);
+    std::cout << "Conjugate gradient method computating (I + A3) * y = w ..." << std::endl;
     std::cout << "The iteration count is: " << cg.iterations() << std::endl;
     std::cout << "The final residual is: " << cg.error() << std::endl;
     // Output the y vector to image
     const std::string y_image_path = "output_VectorY.png";
     outputVectorImage(y, height, width, y_image_path);
-    /************************************************end*******************************************************/
+    /************************************************ end *******************************************************/
 
     // Export the sparse matrix A1 A2 A3
     const std::string sparse_matrixA1_path = "./A1.mtx";
@@ -379,17 +380,36 @@ int main(int argc, char *argv[])
     // Export vector v, w and y
     const std::string vpath = "./v.mtx";
     exportVector(v, vpath);
+    std::cout << "\nVector v saved to " << vpath << std::endl;
     const std::string wpath = "./w.mtx";
     exportVector(w, wpath);
+    std::cout << "Vector w saved to " << wpath << std::endl;
     const std::string ypath = "./y.mtx";
     exportVector(y, ypath);
+    std::cout << "Vector y saved to " << ypath << "\n" << std::endl;
 
-    /**********************************Solve equation of A2*x = w****************************************/
+    /********************************** Solve equation of A2 * x = w ****************************************/
     const std::string xMtxPath = "x.mtx";
     VectorXd x = readMarketVector(xMtxPath); // Read x.mtx file data and output it as image
     const std::string x_image_path = "output_VectorX.png";
     outputVectorImage(x, height, width, x_image_path);
-    /*********************************************end****************************************************/
+    /********************************************* end ****************************************************/
+
+    // Check A2 * x = w
+    VectorXd w_check = A2 * x;
+    const std::string w_check_image_path = "output_VectorW_check.png";
+    outputVectorImage(w_check, height, width, w_check_image_path); // this image should be equal to the noised one!
+    const std::string w_check_path = "./w_check.mtx";
+    exportVector(w_check, w_check_path);
+    std::cout << "Vector w_check saved to " << w_check_path << "\n" << std::endl;
+
+    // Check (I + A3) * y = w
+    const std::string sparse_matrixA3_plus_I_path = "./A3_plus_I.mtx";
+    exportSparsematrix(A3_Plus_I, sparse_matrixA3_plus_I_path);
+    const std::string yMtxPath = "y_check.mtx";
+    VectorXd y_check = readMarketVector(yMtxPath); // Read x.mtx file data and output it as image
+    const std::string y_check_image_path = "output_VectorY_check.png";
+    outputVectorImage(y_check, height, width, y_check_image_path);
 
     // Free memory
     stbi_image_free(image_data);

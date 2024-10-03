@@ -2,26 +2,34 @@
 
 Hands-on Challenge 1 of the course _Numerical Linear Algebra_ by Professor Antonietti, Polimi, a.y. 2024/25.
 
+The description of the challenge is [here](Challenge1_description.pdf). We really thank the teachers for the opportunity.
+
 ## 1. Execution Results
 
-- To run the main code `Challenge1.cpp` on terminal:
+- To run the main code `Challenge1.cpp` on terminal using the Eigen library:
 
   ```bash
   g++ -I ${mkEigenInc} Challenge1.cpp -o exec
   ./exec einstein.jpg > output.txt
   ```
 
-- **This is the output file: [output.txt](output.txt)**
-
-- To run the lis related commands on terminal:
+- To solve the linear system $A_2 \mathbf{x}=\mathbf{w}$ on terminal using Lis (Library of Iterative Solvers for linear systems):
 
   ```bash
-  ./test1 A2.mtx w.mtx x.mtx solve_x_hist.txt
-  -i gmres -maxiter 1000 -tol 1.0e-9 -p ilu -ilu 2
-  > outputLis.txt
+  mpicc -DUSE_MPI -I${mkLisInc} -L${mkLisLib} -llis test1.c -o test1
+  mpirun -n 4 ./test1 A2.mtx w.mtx x.mtx solve_x_hist.txt -i gmres -maxiter 1000 -tol 1.0e-9 -p ilu -ilu 2 > outputLis.txt
   ```
 
-- And this is the lis command output file: [outputLis.txt](outputLis.txt)
+  If you don't want to include the `lis.h` file, simply use:
+
+  ```bash
+  ./test1 A2.mtx w.mtx x.mtx solve_x_hist.txt -i gmres -maxiter 1000 -tol 1.0e-9 -p ilu -ilu 2 > outputLis.txt
+  ```
+- To solve the linear system $(A_3 + I) \mathbf{y}=\mathbf{w}$ on terminal using Lis (just for double checking):
+  
+  ```bash
+  ./test1 A3_plus_I.mtx w.mtx y_check.mtx solve_y_hist.txt -i cg -maxiter 1000 -tol 1.0e-10 > outputLis2.txt
+  ```
 
 ---
 
@@ -29,9 +37,9 @@ Hands-on Challenge 1 of the course _Numerical Linear Algebra_ by Professor Anton
 
 The output results are shown in files below:
 
-- For the Challenge.cpp output: [output.txt](output.txt)
+- For the Challenge.cpp output: **[output.txt](output.txt)**
 
-- For the lis command output: [outputLis.txt](outputLis.txt)
+- For the lis command output: **[outputLis.txt](outputLis.txt)** and **[outputLis2.txt](outputLis2.txt)**
 
 ### 1.2 Image Results
 
@@ -47,19 +55,17 @@ The output results are shown in files below:
 
 ## 2. Explanation
 
-- Use 256 pixel image _einstein.jpg_ as input, print related matrix manually for checking, and output the generated image.
+- All the matrices are by RowMajor order and normalized to $[0,1]$ while processing. Indeed, there are some values which are greater than 1 or less than 0 at the kernel $(mn,mn)$ matrix such as `A2`, which may cause some out of bounds values in the final processed image vector. So, we check the range of image data before `stbi_write_png()` in the `outputVectorImage()` function.
 
-- **all the matrices are by rowmajor order and normalized to $[0,1]$ when processing.** And convert to `Matrix<unsigned char>` when output.
-
-- **Attention! All the output vectors are stored by this format below:**
+- **Attention!** All the output vectors are stored by this format below:
 
   ```
   %%MatrixMarket vector coordinate real general
-  nonzeros (like: 87296)
-  index value (like: 1 0.123; index based from 1 instead of 0)
+  nonzeros
+  index value
   ```
 
-  **the most important thing is that the index is based from 1 instead of 0.** Because the LIS `test1.h` file's default input vector file format is like this, take `testvec0.mtx` for example:
+  For example, take the vector `testvec0.mtx` in the Lis library:
 
   ```
   %%MatrixMarket vector coordinate real general
@@ -73,21 +79,34 @@ The output results are shown in files below:
   7  1.00000000000000000000e+000
   8  1.00000000000000000000e+000
   9  1.00000000000000000000e+000
+  ...
   ```
 
-- v.mtx represents $v$; w.mtx represents $w$; x.mtx represents $x$; y.mtx represents $y$. _A1.mtx, A2.mtx, A3.mtx_ are repectively the $H_{av2}$, $H_{sh2}$ and $H_{lap}$ related convolution matrices.
+  **The most important thing is that the first index is 1 instead of 0**, which is the Lis `test1.h` file's default input vector file format, which is different from the Eigen's one.
 
-- There are some values which are greater than 1 or less than 0 at the kernel $mn*mn$ matrix such as `A2`, which may cause the final processed image vector has some out of bounds value. So we check the range of image data before `stbi_write_png()` at the `outputVectorImage()` function.
+- `v.mtx` represents $\mathbf v$; `w.mtx` represents $\mathbf w$; `x.mtx` represents $\mathbf x$; `y.mtx` represents $\mathbf y$. 
 
-- There are some common functions for convenience
+- `A1.mtx`, `A2.mtx`, `A3.mtx` are repectively the $H_{av2}$, $H_{sh2}$ and $H_{lap}$ related convolution matrices.
+
+- There are some common functions for convenience:
 
   - `convolutionMatrix()`: Input a specific kernel and do related convolution operation to the data, return the sparse matrix of dimension $(mn,mn)$ which is generated from `tripletList` and has the same function as the convolution procedure .
   - `convolutionMatrix2()`: An alternative way to realize this function.
-  - `void outputImage()`: Define the function that convert a **vector** to a `height`\*`width` rectangle matrix. Finally converts to `Matrix<unsigned char>` type and output it to _image.png_ by `stbi_write_png()` method.
-  - `exportVector()`: export a vector to a mtx file. **Please pay attention here if we use `saveMarketVector()`, then when using LIS reading, some issues may occur (at least for me)**.
+  - `void outputVectorImage()`: Define the function that converts a **vector** to a $(mn,mn)$ rectangle matrix with `Matrix<unsigned char>` type and outputs it to _image.png_ by `stbi_write_png()` method.
+  - `exportVector()`: export a vector to a mtx file. **Please pay attention here if we use `saveMarketVector()`, then when using Lis reading, some issues may occur**.
   - `exportSparsematrix():` export a sparse matrix to a mtx file by using `saveMarket()` method.
   - `isSymmetric():` check if a matrix is symmetric by comparing the transpose of it and see the norm of the difference of the two matrix. If the norm is less than the tolerance, we can say that the matrix is symmetric.
-  - `isPositiveDefinite()`: check if a matrix is positive definite by do `cholesky()` (searched online). So, if this operation succeed, it means positive definite. And if it's also symmetric, then the conjungate gradient solver can be used.
+  - `isPositiveDefinite()`: check if a matrix is positive definite by checking if a Cholesky factorization can be succesfully performed. Moreover, if the matrix is also symmetric then the conjungate gradient solver in the Eigen library can be used.
 
-- To ensure $A$'s size is correctly $(mn,mn)$, we use zero padding here. So, the pixel $A(0,0)=60$ is transformed into $A_{\text{new}}=60*5-73-113=114$.
+- For double checking the rightness of our resuls, we performed two additional checks: one for the system $A_2 \mathbf x = \mathbf w $ and one for $(A_3 + I) \mathbf{y}=\mathbf{w}$. As expected, we obtained the right images: [vector_w_check Image](output_VectorW_check.png) equal to [Noised Image](output_NoisedImage.png) and [vector_y_check Image](output_VectorY_check.png) equal to [VectorY Image](output_VectorY.png).
+
+| Noised Image                            | Check (*w_check*)                                 |
+| --------------------------------------- | ------------------------------------------------- |
+| ![Noised Image](output_NoisedImage.png) | ![vector_w_check Image](output_VectorW_check.png) |
+
+| VectorY Image                           | Check (*y_check*)                                 |
+| --------------------------------------- | ------------------------------------------------- |
+| ![VectorY Image](output_VectorY.png)    | ![vector_y_check Image](output_VectorY_check.png) |
+
+- To ensure that the size of an image in matrix form is correct, i.e. $(mn,mn)$, we use zero padding here. It means that the pixel $A(0,0)=60$ is transformed into $A_{\text{new}}=60*5-73-113=114$.
   ![Example Of Zero Padding](ZeroPadding.png)
