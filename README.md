@@ -13,7 +13,7 @@ Hands-on Challenge 1 of the course _Numerical Linear Algebra_ by Professor Anton
 
 - **This is the output file: [output.txt](output.txt)**
 
-- To run the lis related commands on terminal:
+- To run the lis related commands on terminal (take one processor as example):
 
   ```bash
   ./test1 A2.mtx w.mtx x.mtx solve_x_hist.txt
@@ -25,9 +25,9 @@ Hands-on Challenge 1 of the course _Numerical Linear Algebra_ by Professor Anton
 
 ---
 
-### 1.1 Output Results
+### 1.1 Full Output Results
 
-The output results are shown in files below:
+The output results with details are shown in files below:
 
 - For the Challenge.cpp output: [output.txt](output.txt)
 
@@ -37,9 +37,9 @@ The output results are shown in files below:
 
 ---
 
-| Noised Image                            | Smoothed Image                              | Sharpened Image                               |
+| Noised Image                            | Smoothed Noise Image                              | Sharpened Image                               |
 | --------------------------------------- | ------------------------------------------- | --------------------------------------------- |
-| ![Noised Image](output_NoisedImage.png) | ![Smoothed Image](output_SmoothedImage.png) | ![Sharpened Image](output_SharpenedImage.png) |
+| ![Noised Image](output_NoisedImage.png) | ![Smoothed Noise Image](output_SmoothedImage.png) | ![Sharpened Image](output_SharpenedImage.png) |
 
 | Edgedetected Image                                   | VectorX Image                         | VectorY Image                         |
 | ---------------------------------------------------- | ------------------------------------- | ------------------------------------- |
@@ -77,7 +77,17 @@ The output results are shown in files below:
 
 - v.mtx represents $v$; w.mtx represents $w$; x.mtx represents $x$; y.mtx represents $y$. _A1.mtx, A2.mtx, A3.mtx_ are repectively the $H_{av2}$, $H_{sh2}$ and $H_{lap}$ related convolution matrices.
 
-- There are some values which are greater than 1 or less than 0 at the kernel $mn*mn$ matrix such as `A2`, which may cause the final processed image vector has some out of bounds value. So we check the range of image data before `stbi_write_png()` at the `outputVectorImage()` function.
+- There are some values which are greater than 1 or less than 0 at the kernel $mn*mn$ matrix such as `A2`, which may cause the final processed image vector has some out of bounds values. So we check the range of image data before `stbi_write_png()` at the `outputVectorImage()` function.
+
+- For solving equation of $(I + A_3) \times y = w$:
+
+  - **We use conjugate gradient method to solve it with preconditioner `IncompleteCholesky`.** Because we can find that is matrix $A_3+I$ is symmetric and positive definite, so using this kind of solver and preconditioner is very suitable.
+  - By using above method we get this output reslut: **The iteration count for solving y is: 15; The final residual is: 2.76738e-11**
+
+- For solving $A_2 \times x = w$:
+
+  - **We use GMRES method to solve it with preconditioner `ILU` by lis.** Because we can find that is matrix $A_2$ is not symmetric and positive definite.
+  - By using above method at lis we get: **GMRES: number of iterations = 24; GMRES: relative residual = 6.901486e-10**
 
 - There are some common functions for convenience
 
