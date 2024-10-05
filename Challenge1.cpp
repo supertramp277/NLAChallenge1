@@ -370,7 +370,10 @@ int main(int argc, char *argv[])
     std::cout << "--------------Solve equation of (I + A3)*y = w--------------" << std::endl;
     isSymmetric(A3_Plus_I, "A3_Plus_I") && isPositiveDefinite(A3_Plus_I) ? std::cout << "The matrix A3_Plus_I is symmetric positive definite!" << std::endl
                                                                          : std::cout << "The matrix A3_Plus_I is not symmetric positive definite!" << std::endl;
-    ConjugateGradient<SparseMatrix<double, RowMajor>, Lower | Upper, IncompleteCholesky<double>> cg; // I+A3 is spd, use conjugate gradient and IncompleteCholesky
+    // Because I+A3 is spd, using conjugate gradient is suitable. For preconditioner we use IncompleteCholesky
+    // The IncompleteCholesky is likely the better choice due to its effectiveness in handling SPD matrices with strong diagonal dominance. (15 iterations for our example)
+    // The defualt way of Diagonal (Jacobi) Preconditioner is less effective in this case, even though it's with more simplicity and lower computational cost. (32 interations instead)
+    ConjugateGradient<SparseMatrix<double, RowMajor>, Lower | Upper, IncompleteCholesky<double>> cg;
     cg.setTolerance(1e-10);
     cg.compute(A3_Plus_I);
     y = cg.solve(w);

@@ -38,7 +38,7 @@ The output results with details are shown in files below:
 ---
 
 | Noised Image                            | Smoothed Noise Image                              | Sharpened Image                               |
-| --------------------------------------- | ------------------------------------------- | --------------------------------------------- |
+| --------------------------------------- | ------------------------------------------------- | --------------------------------------------- |
 | ![Noised Image](output_NoisedImage.png) | ![Smoothed Noise Image](output_SmoothedImage.png) | ![Sharpened Image](output_SharpenedImage.png) |
 
 | Edgedetected Image                                   | VectorX Image                         | VectorY Image                         |
@@ -79,12 +79,14 @@ The output results with details are shown in files below:
 
 - There are some values which are greater than 1 or less than 0 at the kernel $mn*mn$ matrix such as `A2`, which may cause the final processed image vector has some out of bounds values. So we check the range of image data before `stbi_write_png()` at the `outputVectorImage()` function.
 
-- For solving equation of $(I + A_3) \times y = w$:
+- **For solving equation of $(I + A_3) \times y = w$:**
 
-  - **We use conjugate gradient method to solve it with preconditioner `IncompleteCholesky`.** Because we can find that is matrix $A_3+I$ is symmetric and positive definite, so using this kind of solver and preconditioner is very suitable.
-  - By using above method we get this output reslut: **The iteration count for solving y is: 15; The final residual is: 2.76738e-11**
+  - **We use conjugate gradient method to solve it with preconditioner `IncompleteCholesky`.** Because we can find that is matrix $A_3+I$ is symmetric positive definite and diagonally dominant, so using this kind of solver and preconditioner is very suitable.
+  - **For preconditioner: The Incomplete Cholesky (IC) is likely the best choice** due to its effectiveness in handling SPD matrices with strong diagonal dominance ($5$ for diagonal, others are $4*(-1)$). The defualt way of Diagonal (Jacobi) Preconditioner is less effective in this case, even though it's with more simplicity and lower computational cost.
+  - By using above method we get this output reslut: **The iteration count is: 15 and final residual is: 2.76738e-11**. (compared with default: iteration count: 32 and final residual is: 7.36466e-11).
+  - The Incomplete Cholesky (IC) provides a good balance between efficiency and memory usage and significantly improves the convergence of the Conjugate Gradient (CG) solver compared to the diagonal preconditioner.
 
-- For solving $A_2 \times x = w$:
+- **For solving $A_2 \times x = w$:**
 
   - **We use GMRES method to solve it with preconditioner `ILU` by lis.** Because we can find that is matrix $A_2$ is not symmetric and positive definite.
   - By using above method at lis we get: **GMRES: number of iterations = 24; GMRES: relative residual = 6.901486e-10**
