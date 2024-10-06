@@ -20,13 +20,14 @@ The description of the challenge is [here](Challenge1_description.pdf). We reall
   mpirun -n 4 ./test1 A2.mtx w.mtx x.mtx solve_x_hist.txt -i gmres -maxiter 1000 -tol 1.0e-9 -p ilu -ilu 2 > outputLis.txt
   ```
 
-  If you don't want to include the `lis.h` file, simply use:
+  If you don't want to use mpi for mutiple processors and _include the `lis.h` file_, simply use:
 
   ```bash
   ./test1 A2.mtx w.mtx x.mtx solve_x_hist.txt -i gmres -maxiter 1000 -tol 1.0e-9 -p ilu -ilu 2 > outputLis.txt
   ```
-- To solve the linear system $(A_3 + I) \mathbf{y}=\mathbf{w}$ on terminal using Lis (just for double checking):
-  
+
+- To solve the linear system $(A_3 + I) \mathbf{y}=\mathbf{w}$ on terminal using Lis (just for double checking, should be same as the result by using Eigen):
+
   ```bash
   ./test1 A3_plus_I.mtx w.mtx y_check.mtx solve_y_hist.txt -i cg -maxiter 1000 -tol 1.0e-10 > outputLis2.txt
   ```
@@ -62,7 +63,7 @@ The output results with details are shown in files below:
   ```
   %%MatrixMarket vector coordinate real general
   nonzeros
-  index value
+  index(from 1) value
   ```
 
   For example, take the vector `testvec0.mtx` in the Lis library:
@@ -84,7 +85,7 @@ The output results with details are shown in files below:
 
   **The most important thing is that the first index is 1 instead of 0**, which is the Lis `test1.h` file's default input vector file format, which is different from the Eigen's one.
 
-- `v.mtx` represents $\mathbf v$; `w.mtx` represents $\mathbf w$; `x.mtx` represents $\mathbf x$; `y.mtx` represents $\mathbf y$. 
+- `v.mtx` represents $\mathbf v$; `w.mtx` represents $\mathbf w$; `x.mtx` represents $\mathbf x$; `y.mtx` represents $\mathbf y$.
 
 - `A1.mtx`, `A2.mtx`, `A3.mtx` are repectively the $H_{av2}$, $H_{sh2}$ and $H_{lap}$ related convolution matrices.
 
@@ -95,15 +96,15 @@ The output results with details are shown in files below:
   - The Incomplete Cholesky provides a good balance between efficiency and memory usage and significantly improves the convergence of the CG solver compared to the diagonal preconditioner.
   - By using above-mentioned method directly in Eigen we get these results:
     <p align="center"> <strong> CG with IC preconditioning: number of iterations = 15; relative residual = 2.76738e-11. </strong> </p>    
-    Instead, the plain CG results are:
+    Instead, the plain(diagonal precondition) CG results are:
     <p align="center"> CG: number of iterations = 32; relative residual = 7.36466e-11. </p>
-    In addiction, the result from Lis is:
+    In addiction, the result from Lis (just for double checking) is:
     <p align="center"> CG: number of iterations = 33; relative residual = 7.364660e-11. </p>
 
 - **For solving $A_2 \mathbf x = \mathbf w$:**
 
   - **We use GMRES method to solve it with preconditioner `ILU` by Lis**, because matrix $A_2$ is not symmetric.
-  - By using above-mentioned method at Lis we get: 
+  - By using above-mentioned method at Lis we get:
     <p align="center"> GMRES: number of iterations = 24; relative residual = 6.901486e-10. </p>
 
 - These are some helper functions for convenience:
@@ -111,7 +112,7 @@ The output results with details are shown in files below:
   - `convolutionMatrix()`: Input a specific kernel and do related convolution operation to the data, return the sparse matrix of dimension $(mn,mn)$ which is generated from `tripletList` and has the same function as the convolution procedure .
   - `convolutionMatrix2()`: An alternative way to realize this function.
   - `void outputVectorImage()`: Define the function that converts a **vector** to a $(mn,mn)$ rectangle matrix with `Matrix<unsigned char>` type and outputs it to _image.png_ by `stbi_write_png()` method.
-  - `exportVector()`: export a vector to a mtx file. **Please pay attention here if we use `saveMarketVector()`, then when using Lis reading, some issues may occur**.
+  - `exportVector()`: export a vector to a mtx file (index is from 1). **Please pay attention here if we use `saveMarketVector()`, then when using Lis reading, some issues may occur**.
   - `exportSparsematrix():` export a sparse matrix to a mtx file by using `saveMarket()` method.
   - `isSymmetric():` check if a matrix is symmetric by comparing the transpose of it and see the norm of the difference of the two matrix. If the norm is less than the tolerance, we can say that the matrix is symmetric.
   - `isPositiveDefinite()`: check if a matrix is positive definite by checking if a Cholesky factorization can be succesfully performed. Moreover, if the matrix is also symmetric then the conjungate gradient solver in the Eigen library can be used.
@@ -121,12 +122,17 @@ The output results with details are shown in files below:
 
 ---
 
-Finally, for double checking the rightness of our resuls, we performed two additional checks: one for the system $A_2 \mathbf{x} = \mathbf{w}$ and one for $(A_3 + I) \mathbf{y}=\mathbf{w}$. As expected, we obtained the following images: 
-  
-  | Noised Image                            | Check (*w_check*)                                 |
-  | --------------------------------------- | ------------------------------------------------- |
-  | ![Noised Image](output_NoisedImage.png) | ![vector_w_check Image](output_VectorW_check.png) |
+## 3. Additional Checks
 
-  | VectorY Image                           | Check (*y_check*)                                 |
-  | --------------------------------------- | ------------------------------------------------- |
-  | ![VectorY Image](output_VectorY.png)    | ![vector_y_check Image](output_VectorY_check.png) |
+Finally, for double checking the rightness of our resuls, we performed two additional checks: one for the system $A_2 \mathbf{x} = \mathbf{w}$ and one for $(A_3 + I) \mathbf{y}=\mathbf{w}$. As expected, we obtained the following images:
+
+- Noised Image and CheckW (coming from A2\*x) should be same;
+- VectorY from Eigen and CheckY from Lis should be same.
+
+| Noised Image                            | Check (_w_check_)                                 |
+| --------------------------------------- | ------------------------------------------------- |
+| ![Noised Image](output_NoisedImage.png) | ![vector_w_check Image](output_VectorW_check.png) |
+
+| VectorY Image                        | Check (_y_check_)                                 |
+| ------------------------------------ | ------------------------------------------------- |
+| ![VectorY Image](output_VectorY.png) | ![vector_y_check Image](output_VectorY_check.png) |
