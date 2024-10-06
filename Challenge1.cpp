@@ -318,8 +318,8 @@ int main(int argc, char *argv[])
     // Check the nonzero numbers
     std::cout << "A1 nonzero number is: " << A1.nonZeros() << "\n" << std::endl;
     // Verify if the matrix A2 is symmetric
-    isSymmetric(A1, "A1") ? std::cout << "==> The matrix A1 is symmetric!" << std::endl
-                          : std::cout << "The matrix A1 is not symmetric!" << std::endl;
+    isSymmetric(A1, "A1") ? std::cout << "==> The matrix A1 is symmetric!\n" << std::endl
+                          : std::cout << "The matrix A1 is not symmetric!\n" << std::endl;
 
     // Smooth the noise image by using this filterImage function and passing data and path into it
     const std::string smooth_image_path = "output_SmoothedImage.png";

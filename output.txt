@@ -15,6 +15,7 @@ A1	row: 87296	columns: 87296
 
 Check if A1 is symmetric by norm value of its difference with transpose: 0 ...
 ==> The matrix A1 is symmetric!
+
 New image saved to output_SmoothedImage.png
 
 -------------- Perform convolution about sharpening --------------
