@@ -33,9 +33,9 @@ The description of the challenge is [here](Challenge1_description.pdf). We reall
 
 ---
 
-### 1.1 Output Results
+### 1.1 Full Output Results
 
-The output results are shown in files below:
+The output results with details are shown in files below:
 
 - For the Challenge.cpp output: **[output.txt](output.txt)**
 
@@ -45,9 +45,9 @@ The output results are shown in files below:
 
 ---
 
-| Noised Image                            | Smoothed Image                              | Sharpened Image                               |
-| --------------------------------------- | ------------------------------------------- | --------------------------------------------- |
-| ![Noised Image](output_NoisedImage.png) | ![Smoothed Image](output_SmoothedImage.png) | ![Sharpened Image](output_SharpenedImage.png) |
+| Noised Image                            | Smoothed Noise Image                              | Sharpened Image                               |
+| --------------------------------------- | ------------------------------------------------- | --------------------------------------------- |
+| ![Noised Image](output_NoisedImage.png) | ![Smoothed Noise Image](output_SmoothedImage.png) | ![Sharpened Image](output_SharpenedImage.png) |
 
 | Edgedetected Image                                   | VectorX Image                         | VectorY Image                         |
 | ---------------------------------------------------- | ------------------------------------- | ------------------------------------- |

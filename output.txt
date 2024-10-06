@@ -6,40 +6,43 @@ New image saved to output_NoisedImage.png
 Original image vector v's size: 87296
 Noisy image vector w's size: 87296
 Euclidean norm of v is: 139.516
+
+--------------Perform convolution about smoothing--------------
 A1 nonzero number is: 782086
+A1	row: 87296	columns: 87296
+Check if A1 is symmectric by norm value of its difference with transpose: 0
+The matrix A1 is symmetric!
 New image saved to output_SmoothedImage.png
 
+--------------Perform convolution about sharpening--------------
 A2 nonzero number is: 435286
 A2	row: 87296	columns: 87296
 Check if A2 is symmectric by norm value of its difference with transpose: 1179.81
 The matrix A2 is not symmetric!
 New image saved to output_SharpenedImage.png
 
+--------------Perform convolution about edgedetection--------------
+A3 nonzero number is: 435286
 A3	row: 87296	columns: 87296
 Check if A3 is symmectric by norm value of its difference with transpose: 0
 The matrix A3 is symmetric!
-The matrix A3 is positive definite!
 New image saved to output_EdgeDetectionImage.png
 
-Conjugate gradient method computating (I + A3) * y = w ...
-The iteration count is: 32
-The final residual is: 7.36466e-11
+--------------Solve equation of (I + A3)*y = w--------------
+A3_Plus_I	row: 87296	columns: 87296
+Check if A3_Plus_I is symmectric by norm value of its difference with transpose: 0
+The matrix A3_Plus_I is symmetric positive definite!
+The iteration count for solving y is: 15
+The final residual is: 2.76738e-11
 New image saved to output_VectorY.png
 
-Spars matrix saved to ./A1.mtx
-Spars matrix saved to ./A2.mtx
-Spars matrix saved to ./A3.mtx
-
-Vector v saved to ./v.mtx
-Vector w saved to ./w.mtx
-Vector y saved to ./y.mtx
-
+--------------Output matrices and vectors to check--------------
+New sparse matrix saved to ./A1.mtx
+New sparse matrix saved to ./A2.mtx
+New sparse matrix saved to ./A3.mtx
+New vector file saved to ./v.mtx
+New vector file saved to ./w.mtx
+New vector file saved to ./y.mtx
+--------------Output x.png solved from lis--------------
 New image saved to output_VectorX.png
-
-New image saved to output_VectorW_check.png
-
-Vector w_check saved to ./w_check.mtx
-
-Spars matrix saved to ./A3_plus_I.mtx
-New image saved to output_VectorY_check.png
 
