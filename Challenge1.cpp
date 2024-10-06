@@ -7,7 +7,9 @@
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-
+/*****************************************************************************************************************/
+// More details and explanation are at this link: https://github.com/supertramp277/NLAChallenge1/tree/main
+/*****************************************************************************************************************/
 using namespace Eigen;
 typedef Eigen::Triplet<double> T;
 
