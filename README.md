@@ -126,7 +126,7 @@ The output results with details are shown in files below:
 
 Finally, for double checking the rightness of our resuls, we performed two additional checks: one for the system $A_2 \mathbf{x} = \mathbf{w}$ and one for $(A_3 + I) \mathbf{y}=\mathbf{w}$. As expected, we obtained the following images:
 
-- Noised Image and CheckW (coming from A2\*x) should be same;
+- Noised Image and CheckW (coming from $A_2 \mathbf{x}$) should be same;
 - VectorY from Eigen and CheckY from Lis should be same.
 
 | Noised Image                            | Check (_w_check_)                                 |
