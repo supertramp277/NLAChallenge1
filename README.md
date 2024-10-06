@@ -82,7 +82,7 @@ The output results with details are shown in files below:
 - **For solving equation of $(I + A_3) \times y = w$:**
 
   - **We use conjugate gradient method to solve it with preconditioner `IncompleteCholesky`.** Because we can find that is matrix $A_3+I$ is symmetric positive definite and diagonally dominant, so using this kind of solver and preconditioner is very suitable.
-  - **For preconditioner: The Incomplete Cholesky (IC) is likely the best choice** due to its effectiveness in handling SPD matrices with strong diagonal dominance ($5$ for diagonal, others are $4*(-1)$). The defualt way of Diagonal (Jacobi) Preconditioner is less effective in this case, even though it's with more simplicity and lower computational cost.
+  - **For preconditioner: The Incomplete Cholesky (IC) is likely the best choice** due to its effectiveness in handling SPD matrices with strong diagonal dominance ($5$ for diagonal, others are $4\times(-1)$). The defualt way of Diagonal (Jacobi) Preconditioner is less effective in this case, even though it's with more simplicity and lower computational cost.
   - By using above method we get this output reslut: **The iteration count is: 15 and final residual is: 2.76738e-11**. (compared with default: iteration count: 32 and final residual is: 7.36466e-11).
   - The Incomplete Cholesky (IC) provides a good balance between efficiency and memory usage and significantly improves the convergence of the Conjugate Gradient (CG) solver compared to the diagonal preconditioner.
 
@@ -96,7 +96,7 @@ The output results with details are shown in files below:
   - `convolutionMatrix()`: Input a specific kernel and do related convolution operation to the data, return the sparse matrix of dimension $(mn,mn)$ which is generated from `tripletList` and has the same function as the convolution procedure .
   - `convolutionMatrix2()`: An alternative way to realize this function.
   - `void outputImage()`: Define the function that convert a **vector** to a `height`\*`width` rectangle matrix. Finally converts to `Matrix<unsigned char>` type and output it to _image.png_ by `stbi_write_png()` method.
-  - `exportVector()`: export a vector to a mtx file. **Please pay attention here if we use `saveMarketVector()`, then when using LIS reading, some issues may occur (at least for me)**.
+  - `exportVector()`: export a vector to a mtx file. If we use `saveMarketVector()`, then when using LIS reading, some issues may occur (at least for me). And here **the index is from 1 instead of 0.**
   - `exportSparsematrix():` export a sparse matrix to a mtx file by using `saveMarket()` method.
   - `isSymmetric():` check if a matrix is symmetric by comparing the transpose of it and see the norm of the difference of the two matrix. If the norm is less than the tolerance, we can say that the matrix is symmetric.
   - `isPositiveDefinite()`: check if a matrix is positive definite by do `cholesky()` (searched online). So, if this operation succeed, it means positive definite. And if it's also symmetric, then the conjungate gradient solver can be used.
