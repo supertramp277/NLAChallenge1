@@ -7,42 +7,72 @@ Original image vector v's size: 87296
 Noisy image vector w's size: 87296
 Euclidean norm of v is: 139.516
 
---------------Perform convolution about smoothing--------------
+-------------- Perform convolution about smoothing --------------
+
 A1 nonzero number is: 782086
+
 A1	row: 87296	columns: 87296
-Check if A1 is symmectric by norm value of its difference with transpose: 0
-The matrix A1 is symmetric!
+
+Check if A1 is symmetric by norm value of its difference with transpose: 0 ...
+==> The matrix A1 is symmetric!
 New image saved to output_SmoothedImage.png
 
---------------Perform convolution about sharpening--------------
+-------------- Perform convolution about sharpening --------------
+
 A2 nonzero number is: 435286
+
 A2	row: 87296	columns: 87296
-Check if A2 is symmectric by norm value of its difference with transpose: 1179.81
+
+Check if A2 is symmetric by norm value of its difference with transpose: 1179.81 ...
 The matrix A2 is not symmetric!
+
 New image saved to output_SharpenedImage.png
 
---------------Perform convolution about edgedetection--------------
+-------------- Perform convolution about edgedetection --------------
+
 A3 nonzero number is: 435286
+
 A3	row: 87296	columns: 87296
-Check if A3 is symmectric by norm value of its difference with transpose: 0
-The matrix A3 is symmetric!
+
+Check if A3 is symmetric by norm value of its difference with transpose: 0 ...
+==> The matrix A3 is symmetric!
+
 New image saved to output_EdgeDetectionImage.png
 
---------------Solve equation of (I + A3)*y = w--------------
+-------------- Solve equation of (I + A3) * y = w --------------
+
 A3_Plus_I	row: 87296	columns: 87296
-Check if A3_Plus_I is symmectric by norm value of its difference with transpose: 0
-The matrix A3_Plus_I is symmetric positive definite!
-The iteration count for solving y is: 15
-The final residual is: 2.76738e-11
+
+Check if A3_Plus_I is symmetric by norm value of its difference with transpose: 0 ...
+Check if A3_Plus_I is positive definite ... 
+ ==> The matrix A3_Plus_I is symmetric positive definite!
+
+The CG method's iteration count is: 15
+The CG method's final residual is: 2.76738e-11
+
 New image saved to output_VectorY.png
 
---------------Output matrices and vectors to check--------------
+-------------- Output matrices and vectors to check --------------
+
 New sparse matrix saved to ./A1.mtx
 New sparse matrix saved to ./A2.mtx
 New sparse matrix saved to ./A3.mtx
+
 New vector file saved to ./v.mtx
 New vector file saved to ./w.mtx
 New vector file saved to ./y.mtx
---------------Output x.png solved from lis--------------
+
+-------------- Output x.png solved in Lis from A2 * x = w --------------
+
 New image saved to output_VectorX.png
+
+-------------- Some useful checks for solving linear systems --------------
+
+New image saved to output_VectorW_check.png
+
+New vector file saved to ./w_check.mtx
+
+New sparse matrix saved to ./A3_plus_I.mtx
+
+New image saved to output_VectorY_check.png
 

@@ -55,7 +55,7 @@ SparseMatrix<double, RowMajor> convolutionMatrix(const Matrix<double, Dynamic, D
     return A;
 }
 
-// 2. An alternative definition for kernels H 3 by 3 to realize the convolution, easy to generalize
+// 2: An alternative definition for kernels H 3 by 3 to realize the convolution, easy to generalize
 SparseMatrix<double, RowMajor> convolutionMatrix2(const Matrix<double, Dynamic, Dynamic, RowMajor> &kernel, int m, int n)
 {
     const int mn = m * n;
@@ -163,14 +163,15 @@ bool isSymmetric(SparseMatrix<double, RowMajor> &matrix, const std::string &matr
     double tolerance = 1e-10;
     double norm_diff = (matrix - SparseMatrix<double, RowMajor>(matrix.transpose())).norm();
     std::cout << matrixName << "\trow: " << matrix.rows() << "\tcolumns: " << matrix.cols() << std::endl;
-    std::cout << "Check if " << matrixName << " is symmectric by norm value of its difference with transpose: "
-              << norm_diff << std::endl;
+    std::cout << "\nCheck if " << matrixName << " is symmetric by norm value of its difference with transpose: "
+              << norm_diff << " ..." << std::endl;
     return norm_diff < tolerance;
 }
 
 // Function to check if a matrix is positive definite by cholesky
-bool isPositiveDefinite(const SparseMatrix<double, RowMajor> &matrix)
+bool isPositiveDefinite(const SparseMatrix<double, RowMajor> &matrix, const std::string &matrixName)
 {
+    std::cout << "Check if " << matrixName << " is positive definite ... " << std::endl;
     Eigen::SimplicialLLT<SparseMatrix<double, RowMajor>> cholesky(matrix);
     return cholesky.info() == Success;
 }
@@ -245,7 +246,7 @@ int main(int argc, char *argv[])
     std::cout << "Image " << argv[1] << " loaded: " << height << "x" << width << " pixels with " << channels << " channels" << std::endl;
 
     /*************Convert the image_data to MatrixXd form, each element value is normalized to [0,1]*************/
-    // Attention! if use MatrixXd here its columnmajor by default, we prefere rowmajor!
+    // Attention! We use RowMajor notation!
     Matrix<double, Dynamic, Dynamic, RowMajor> original_image_matrix(height, width);
 
     for (int i = 0; i < height; i++)
@@ -291,10 +292,10 @@ int main(int argc, char *argv[])
     }
     std::cout << "New image saved to " << noised_image_path << "\n"
               << std::endl;
-    /*************************************************end****************************************************/
+    /************************************************* end ****************************************************/
 
-    /*-----------_------By map creat a vector reference to memeory without copying data---------------------*/
-    // It is columnmajor by default, however, we've already declared our data rowmajor so here it's rowmajor as well.
+    /*-------------------By map creat a vector reference to memeory without copying data----------------------*/
+    // It is ColumnMajor by default, however, we've already declared our data RowMajor.
     Map<VectorXd> v(original_image_matrix.data(), original_image_matrix.size());
     Map<VectorXd> w(noised_image_matrix.data(), noised_image_matrix.size());
 
@@ -308,16 +309,16 @@ int main(int argc, char *argv[])
     const int kernel_size = 3;
 
     /*---------------------Create the kernel H_{av2} and do smooth convolution to noised image-------------------*/
-    std::cout << "--------------Perform convolution about smoothing--------------" << std::endl;
+    std::cout << "-------------- Perform convolution about smoothing --------------\n" << std::endl;
     const double hav2_value = 1.0 / (kernel_size * kernel_size);
     Matrix<double, kernel_size, kernel_size, RowMajor> hav2;
     hav2.setConstant(hav2_value);
     // Perform convolution function
     SparseMatrix<double, RowMajor> A1 = convolutionMatrix(hav2, height, width);
     // Check the nonzero numbers
-    std::cout << "A1 nonzero number is: " << A1.nonZeros() << std::endl;
+    std::cout << "A1 nonzero number is: " << A1.nonZeros() << "\n" << std::endl;
     // Verify if the matrix A2 is symmetric
-    isSymmetric(A1, "A1") ? std::cout << "The matrix A1 is symmetric!" << std::endl
+    isSymmetric(A1, "A1") ? std::cout << "==> The matrix A1 is symmetric!" << std::endl
                           : std::cout << "The matrix A1 is not symmetric!" << std::endl;
 
     // Smooth the noise image by using this filterImage function and passing data and path into it
@@ -326,7 +327,7 @@ int main(int argc, char *argv[])
     outputVectorImage(smoothed_image_vector, height, width, smooth_image_path);
 
     /*-------------------Create the kernel H_{sh2} and do sharpen convolution to original image-----------------*/
-    std::cout << "--------------Perform convolution about sharpening--------------" << std::endl;
+    std::cout << "-------------- Perform convolution about sharpening --------------\n" << std::endl;
     Matrix<double, kernel_size, kernel_size, RowMajor> hsh2;
     hsh2 << 0.0, -3.0, 0.0,
         -1.0, 9.0, -3.0,
@@ -334,10 +335,10 @@ int main(int argc, char *argv[])
     // Perform convolution function
     SparseMatrix<double, RowMajor> A2 = convolutionMatrix(hsh2, height, width);
     // Check the nonzero numbers
-    std::cout << "A2 nonzero number is: " << A2.nonZeros() << std::endl;
+    std::cout << "A2 nonzero number is: " << A2.nonZeros() << "\n" << std::endl;
     // Verify if the matrix A2 is symmetric
-    isSymmetric(A2, "A2") ? std::cout << "The matrix A2 is symmetric!" << std::endl
-                          : std::cout << "The matrix A2 is not symmetric!" << std::endl;
+    isSymmetric(A2, "A2") ? std::cout << "==> The matrix A2 is symmetric!\n" << std::endl
+                          : std::cout << "The matrix A2 is not symmetric!\n" << std::endl;
 
     // Sharpen the original image by matrix production
     const std::string sharpen_image_path = "output_SharpenedImage.png";
@@ -345,33 +346,33 @@ int main(int argc, char *argv[])
     outputVectorImage(sharpened_image_vector, height, width, sharpen_image_path);
 
     /*------------------Create the kernel H_{lap} and do edgedetection convolution to original image-----------------*/
-    std::cout << "--------------Perform convolution about edgedetection--------------" << std::endl;
+    std::cout << "-------------- Perform convolution about edgedetection --------------\n" << std::endl;
     Matrix<double, kernel_size, kernel_size, RowMajor> hlap;
     hlap << 0.0, -1.0, 0.0,
         -1.0, 4.0, -1.0,
         0.0, -1.0, 0.0;
     // Perform convolution function
     SparseMatrix<double, RowMajor> A3 = convolutionMatrix(hlap, height, width);
-    std::cout << "A3 nonzero number is: " << A3.nonZeros() << std::endl;
+    std::cout << "A3 nonzero number is: " << A3.nonZeros() << "\n" << std::endl;
     // Verify if the matrix A3 is symmetric
-    isSymmetric(A3, "A3") ? std::cout << "The matrix A3 is symmetric!" << std::endl
-                          : std::cout << "The matrix A3 is not symmetric!" << std::endl;
+    isSymmetric(A3, "A3") ? std::cout << "==> The matrix A3 is symmetric!\n" << std::endl
+                          : std::cout << "The matrix A3 is not symmetric!\n" << std::endl;
 
     // Edge detection of the original image
     const std::string edgeDetection_image_path = "output_EdgeDetectionImage.png";
     VectorXd edgeDetected_image_vector = A3 * v;
     outputVectorImage(edgeDetected_image_vector, height, width, edgeDetection_image_path);
-    /************************************************end*******************************************************/
+    /************************************************ end *******************************************************/
 
-    /**********************************Solve equation of (I + A3)*y = w****************************************/
+    /********************************** Solve equation of (I + A3) * y = w ****************************************/
     VectorXd y(w.size());
     SparseMatrix<double, RowMajor> I(A3.rows(), A3.rows());
     I.setIdentity();
     SparseMatrix<double, RowMajor> A3_Plus_I = A3 + I;
     // Check if A3+I is spd
-    std::cout << "--------------Solve equation of (I + A3)*y = w--------------" << std::endl;
-    isSymmetric(A3_Plus_I, "A3_Plus_I") && isPositiveDefinite(A3_Plus_I) ? std::cout << "The matrix A3_Plus_I is symmetric positive definite!" << std::endl
-                                                                         : std::cout << "The matrix A3_Plus_I is not symmetric positive definite!" << std::endl;
+    std::cout << "-------------- Solve equation of (I + A3) * y = w --------------\n" << std::endl;
+    isSymmetric(A3_Plus_I, "A3_Plus_I") && isPositiveDefinite(A3_Plus_I, "A3_Plus_I") ? std::cout << " ==> The matrix A3_Plus_I is symmetric positive definite!\n" << std::endl
+                                                                                      : std::cout << "The matrix A3_Plus_I is not symmetric positive definite!\n" << std::endl;
     // Because I+A3 is spd, using conjugate gradient is suitable. For preconditioner we use IncompleteCholesky
     // The IncompleteCholesky is likely the better choice due to its effectiveness in handling SPD matrices with strong diagonal dominance. (15 iterations for our example)
     // The defualt way of Diagonal (Jacobi) Preconditioner is less effective in this case, even though it's with more simplicity and lower computational cost. (32 interations instead)
@@ -379,21 +380,23 @@ int main(int argc, char *argv[])
     cg.setTolerance(1e-10);
     cg.compute(A3_Plus_I);
     y = cg.solve(w);
-    std::cout << "The iteration count for solving y is: " << cg.iterations() << std::endl;
-    std::cout << "The final residual is: " << cg.error() << std::endl;
+    std::cout << "The CG method's iteration count is: " << cg.iterations() << std::endl;
+    std::cout << "The CG method's final residual is: " << cg.error() << "\n" << std::endl;
     // Output the y vector to image
     const std::string y_image_path = "output_VectorY.png";
     outputVectorImage(y, height, width, y_image_path);
-    /************************************************end*******************************************************/
+    /************************************************ end *******************************************************/
 
     // Export the sparse matrix A1 A2 A3
-    std::cout << "--------------Output matrices and vectors to check--------------" << std::endl;
+    std::cout << "-------------- Output matrices and vectors to check --------------\n" << std::endl;
     const std::string sparse_matrixA1_path = "./A1.mtx";
     exportSparsematrix(A1, sparse_matrixA1_path);
     const std::string sparse_matrixA2_path = "./A2.mtx";
     exportSparsematrix(A2, sparse_matrixA2_path);
     const std::string sparse_matrixA3_path = "./A3.mtx";
     exportSparsematrix(A3, sparse_matrixA3_path);
+
+    std::cout << "\n";
 
     // Export vector v, w and y
     const std::string vpath = "./v.mtx";
@@ -404,12 +407,30 @@ int main(int argc, char *argv[])
     exportVector(y, ypath);
 
     /**********************************Solve equation of A2*x = w****************************************/
-    const std::string xMtxPath = "x.mtx";    // x.mtx is generated from lis by GMRES and precondtion ILU
+    std::cout << "\n-------------- Output x.png solved in Lis from A2 * x = w --------------\n" << std::endl;
+    const std::string xMtxPath = "x.mtx";    // x.mtx is generated from Lis by GMRES and precondtion ILU
     VectorXd x = readMarketVector(xMtxPath); // Read x.mtx which index is from 1 and output it as image
     const std::string x_image_path = "output_VectorX.png";
-    std::cout << "--------------Output x.png solved from lis--------------" << std::endl;
     outputVectorImage(x, height, width, x_image_path);
-    /*********************************************end****************************************************/
+    /********************************************* end ****************************************************/
+
+    std::cout << "-------------- Some useful checks for solving linear systems --------------\n" << std::endl;
+    // Check A2 * x = w
+    VectorXd w_check = A2 * x;
+    const std::string w_check_image_path = "output_VectorW_check.png";
+    outputVectorImage(w_check, height, width, w_check_image_path); // this image should be equal to the noised one!
+    const std::string w_check_path = "./w_check.mtx";
+    exportVector(w_check, w_check_path);
+    std::cout << "\n";
+
+    // Check (I + A3) * y = w
+    const std::string sparse_matrixA3_plus_I_path = "./A3_plus_I.mtx";
+    exportSparsematrix(A3_Plus_I, sparse_matrixA3_plus_I_path);
+    std::cout << "\n";
+    const std::string yMtxPath = "y_check.mtx";
+    VectorXd y_check = readMarketVector(yMtxPath); // Read x.mtx file data and output it as image
+    const std::string y_check_image_path = "output_VectorY_check.png";
+    outputVectorImage(y_check, height, width, y_check_image_path);
 
     // Free memory
     stbi_image_free(image_data);

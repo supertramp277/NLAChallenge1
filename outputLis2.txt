@@ -1,0 +1,21 @@
+
+number of processes = 1
+matrix size = 87296 x 87296 (435286 nonzero entries)
+
+initial vector x      : all components set to 0
+precision             : double
+linear solver         : CG
+preconditioner        : none
+convergence condition : ||b-Ax||_2 <= 1.0e-10 * ||b-Ax_0||_2
+matrix storage format : CSR
+linear solver status  : normal end
+
+CG: number of iterations = 33
+CG:   double             = 33
+CG:   quad               = 0
+CG: elapsed time         = 2.340603e-02 sec.
+CG:   preconditioner     = 5.571842e-04 sec.
+CG:     matrix creation  = 0.000000e+00 sec.
+CG:   linear solver      = 2.284884e-02 sec.
+CG: relative residual    = 7.364660e-11
+
