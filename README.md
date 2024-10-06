@@ -13,7 +13,7 @@ The description of the challenge is [here](Challenge1_description.pdf). We reall
   ./exec einstein.jpg > output.txt
   ```
 
-- To solve the linear system $A_2 \, \mathbf{x}=\mathbf{w}$ on terminal using Lis (Library of Iterative Solvers for linear systems):
+- To solve the linear system $A_2 \mathbf{x}=\mathbf{w}$ on terminal using Lis (Library of Iterative Solvers for linear systems):
 
   ```bash
   mpicc -DUSE_MPI -I${mkLisInc} -L${mkLisLib} -llis test1.c -o test1
@@ -25,7 +25,7 @@ The description of the challenge is [here](Challenge1_description.pdf). We reall
   ```bash
   ./test1 A2.mtx w.mtx x.mtx solve_x_hist.txt -i gmres -maxiter 1000 -tol 1.0e-9 -p ilu -ilu 2 > outputLis.txt
   ```
-- To solve the linear system $(A_3 + I)\, \mathbf{y}=\mathbf{w}$ on terminal using Lis (just for double checking):
+- To solve the linear system $(A_3 + I) \mathbf{y}=\mathbf{w}$ on terminal using Lis (just for double checking):
   
   ```bash
   ./test1 A3_plus_I.mtx w.mtx y_check.mtx solve_y_hist.txt -i cg -maxiter 1000 -tol 1.0e-10 > outputLis2.txt
@@ -88,7 +88,7 @@ The output results with details are shown in files below:
 
 - `A1.mtx`, `A2.mtx`, `A3.mtx` are repectively the $H_{av2}$, $H_{sh2}$ and $H_{lap}$ related convolution matrices.
 
-- **For solving equation of $(I + A_3)\, \mathbf y = \mathbf w$:**
+- **For solving equation of $(I + A_3) \mathbf y = \mathbf w$:**
 
   - **We use Conjugate Gradient (CG) method to solve it with preconditioner `IncompleteCholesky`.** Since the matrix $A_3+I$ is symmetric and positive definite and, moreover, diagonally dominant, this kind of solver and preconditioner are very suitable.
   - **For preconditioning: The Incomplete Cholesky (IC) is likely the best choice** due to its effectiveness in handling SPD matrices with strong diagonal dominance (ours are 5 for diagonal elements, -4 otherwise). The default way of Diagonal (Jacobi) Preconditioner is less effective in this case, even though it's simpler and with a lower computational cost.
@@ -100,7 +100,7 @@ The output results with details are shown in files below:
     In addiction, the result from Lis is:
     <center> CG: number of iterations = 33; relative residual = 7.364660e-11. </center>
 
-- **For solving $A_2\, \mathbf x = \mathbf w$:**
+- **For solving $A_2 \mathbf x = \mathbf w$:**
 
   - **We use GMRES method to solve it with preconditioner `ILU` by Lis**, because matrix $A_2$ is not symmetric.
   - By using above-mentioned method at Lis we get: 
@@ -121,7 +121,7 @@ The output results with details are shown in files below:
 
 ---
 
-Finally, for double checking the rightness of our resuls, we performed two additional checks: one for the system $A_2 \, \mathbf x = \mathbf w $ and one for $(A_3 + I)\, \mathbf{y}=\mathbf{w}$. As expected, we obtained the following images: 
+Finally, for double checking the rightness of our resuls, we performed two additional checks: one for the system $A_2 \mathbf x = \mathbf w $ and one for $(A_3 + I) \mathbf{y}=\mathbf{w}$. As expected, we obtained the following images: 
   
   | Noised Image                            | Check (*w_check*)                                 |
   | --------------------------------------- | ------------------------------------------------- |
