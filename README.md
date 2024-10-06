@@ -104,7 +104,7 @@ The output results with details are shown in files below:
 
   - **We use GMRES method to solve it with preconditioner `ILU` by Lis**, because matrix $A_2$ is not symmetric.
   - By using above-mentioned method at Lis we get: 
-    <center> GMRES: number of iterations = 24; relative residual = 6.901486e-10. </center>
+    <p align="center"> GMRES: number of iterations = 24; relative residual = 6.901486e-10. </p>
 
 - These are some helper functions for convenience:
 
