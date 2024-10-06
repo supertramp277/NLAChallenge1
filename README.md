@@ -94,11 +94,11 @@ The output results with details are shown in files below:
   - **For preconditioning: The Incomplete Cholesky (IC) is likely the best choice** due to its effectiveness in handling SPD matrices with strong diagonal dominance (ours are 5 for diagonal elements, -4 otherwise). The default way of Diagonal (Jacobi) Preconditioner is less effective in this case, even though it's simpler and with a lower computational cost.
   - The Incomplete Cholesky provides a good balance between efficiency and memory usage and significantly improves the convergence of the CG solver compared to the diagonal preconditioner.
   - By using above-mentioned method directly in Eigen we get these results:
-    <center> CG with IC preconditioning: number of iterations = 15; relative residual = 2.76738e-11. </center>    
+    <p align="center"> <strong> CG with IC preconditioning: number of iterations = 15; relative residual = 2.76738e-11. </strong> </p>    
     Instead, the plain CG results are:
-    <center> CG: number of iterations = 32; relative residual = 7.36466e-11. </center>
+    <p align="center"> CG: number of iterations = 32; relative residual = 7.36466e-11. </p>
     In addiction, the result from Lis is:
-    <center> CG: number of iterations = 33; relative residual = 7.364660e-11. </center>
+    <p align="center"> CG: number of iterations = 33; relative residual = 7.364660e-11. </p>
 
 - **For solving $A_2 \mathbf x = \mathbf w$:**
 
