@@ -13,7 +13,7 @@ The description of the challenge is [here](Challenge1_description.pdf). We reall
   ./exec einstein.jpg > output.txt
   ```
 
-- To solve the linear system $A_2 \mathbf{x}=\mathbf{w}$ on terminal using Lis (Library of Iterative Solvers for linear systems):
+- To solve the linear system $A_2 \, \mathbf{x}=\mathbf{w}$ on terminal using Lis (Library of Iterative Solvers for linear systems):
 
   ```bash
   mpicc -DUSE_MPI -I${mkLisInc} -L${mkLisLib} -llis test1.c -o test1
@@ -25,7 +25,7 @@ The description of the challenge is [here](Challenge1_description.pdf). We reall
   ```bash
   ./test1 A2.mtx w.mtx x.mtx solve_x_hist.txt -i gmres -maxiter 1000 -tol 1.0e-9 -p ilu -ilu 2 > outputLis.txt
   ```
-- To solve the linear system $(A_3 + I) \mathbf{y}=\mathbf{w}$ on terminal using Lis (just for double checking):
+- To solve the linear system $(A_3 + I)\, \mathbf{y}=\mathbf{w}$ on terminal using Lis (just for double checking):
   
   ```bash
   ./test1 A3_plus_I.mtx w.mtx y_check.mtx solve_y_hist.txt -i cg -maxiter 1000 -tol 1.0e-10 > outputLis2.txt
@@ -37,9 +37,9 @@ The description of the challenge is [here](Challenge1_description.pdf). We reall
 
 The output results with details are shown in files below:
 
-- For the Challenge.cpp output: **[output.txt](output.txt)**
+- For the `Challenge.cpp` output: **[output.txt](output.txt)**
 
-- For the lis command output: **[outputLis.txt](outputLis.txt)** and **[outputLis2.txt](outputLis2.txt)**
+- For the Lis command output: **[outputLis.txt](outputLis.txt)** and **[outputLis2.txt](outputLis2.txt)**
 
 ### 1.2 Image Results
 
@@ -88,7 +88,25 @@ The output results with details are shown in files below:
 
 - `A1.mtx`, `A2.mtx`, `A3.mtx` are repectively the $H_{av2}$, $H_{sh2}$ and $H_{lap}$ related convolution matrices.
 
-- There are some common functions for convenience:
+- **For solving equation of $(I + A_3)\, \mathbf y = \mathbf w$:**
+
+  - **We use Conjugate Gradient (CG) method to solve it with preconditioner `IncompleteCholesky`.** Since the matrix $A_3+I$ is symmetric and positive definite and, moreover, diagonally dominant, this kind of solver and preconditioner are very suitable.
+  - **For preconditioning: The Incomplete Cholesky (IC) is likely the best choice** due to its effectiveness in handling SPD matrices with strong diagonal dominance (ours are 5 for diagonal elements, -4 otherwise). The default way of Diagonal (Jacobi) Preconditioner is less effective in this case, even though it's simpler and with a lower computational cost.
+  - The Incomplete Cholesky provides a good balance between efficiency and memory usage and significantly improves the convergence of the CG solver compared to the diagonal preconditioner.
+  - By using above-mentioned method directly in Eigen we get these results:
+    <center> CG with IC preconditioning: number of iterations = 15; relative residual = 2.76738e-11. </center>    
+    Instead, the plain CG results are:
+    <center> CG: number of iterations = 32; relative residual = 7.36466e-11. </center>
+    In addiction, the result from Lis is:
+    <center> CG: number of iterations = 33; relative residual = 7.364660e-11. </center>
+
+- **For solving $A_2\, \mathbf x = \mathbf w$:**
+
+  - **We use GMRES method to solve it with preconditioner `ILU` by Lis**, because matrix $A_2$ is not symmetric.
+  - By using above-mentioned method at Lis we get: 
+    <center> GMRES: number of iterations = 24; relative residual = 6.901486e-10. </center>
+
+- These are some helper functions for convenience:
 
   - `convolutionMatrix()`: Input a specific kernel and do related convolution operation to the data, return the sparse matrix of dimension $(mn,mn)$ which is generated from `tripletList` and has the same function as the convolution procedure .
   - `convolutionMatrix2()`: An alternative way to realize this function.
@@ -98,15 +116,17 @@ The output results with details are shown in files below:
   - `isSymmetric():` check if a matrix is symmetric by comparing the transpose of it and see the norm of the difference of the two matrix. If the norm is less than the tolerance, we can say that the matrix is symmetric.
   - `isPositiveDefinite()`: check if a matrix is positive definite by checking if a Cholesky factorization can be succesfully performed. Moreover, if the matrix is also symmetric then the conjungate gradient solver in the Eigen library can be used.
 
-- For double checking the rightness of our resuls, we performed two additional checks: one for the system $A_2 \mathbf x = \mathbf w $ and one for $(A_3 + I) \mathbf{y}=\mathbf{w}$. As expected, we obtained the right images: [vector_w_check Image](output_VectorW_check.png) equal to [Noised Image](output_NoisedImage.png) and [vector_y_check Image](output_VectorY_check.png) equal to [VectorY Image](output_VectorY.png).
-
-| Noised Image                            | Check (*w_check*)                                 |
-| --------------------------------------- | ------------------------------------------------- |
-| ![Noised Image](output_NoisedImage.png) | ![vector_w_check Image](output_VectorW_check.png) |
-
-| VectorY Image                           | Check (*y_check*)                                 |
-| --------------------------------------- | ------------------------------------------------- |
-| ![VectorY Image](output_VectorY.png)    | ![vector_y_check Image](output_VectorY_check.png) |
-
-- To ensure that the size of an image in matrix form is correct, i.e. $(mn,mn)$, we use zero padding here. It means that the pixel $A(0,0)=60$ is transformed into $A_{\text{new}}=60*5-73-113=114$.
+- To ensure that the size of an image in matrix form is correct, i.e. $(mn,mn)$, we use zero padding here. It means that the pixel $A(0,0)=60$ is transformed into $A_{\text{new}}=60\cdot5-73-113=114$.
   ![Example Of Zero Padding](ZeroPadding.png)
+
+---
+
+Finally, for double checking the rightness of our resuls, we performed two additional checks: one for the system $A_2 \, \mathbf x = \mathbf w $ and one for $(A_3 + I)\, \mathbf{y}=\mathbf{w}$. As expected, we obtained the following images: 
+  
+  | Noised Image                            | Check (*w_check*)                                 |
+  | --------------------------------------- | ------------------------------------------------- |
+  | ![Noised Image](output_NoisedImage.png) | ![vector_w_check Image](output_VectorW_check.png) |
+
+  | VectorY Image                           | Check (*y_check*)                                 |
+  | --------------------------------------- | ------------------------------------------------- |
+  | ![VectorY Image](output_VectorY.png)    | ![vector_y_check Image](output_VectorY_check.png) |

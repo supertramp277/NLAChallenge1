@@ -13,9 +13,9 @@ linear solver status  : normal end
 CG: number of iterations = 33
 CG:   double             = 33
 CG:   quad               = 0
-CG: elapsed time         = 2.508998e-02 sec.
-CG:   preconditioner     = 5.860329e-04 sec.
+CG: elapsed time         = 2.340603e-02 sec.
+CG:   preconditioner     = 5.571842e-04 sec.
 CG:     matrix creation  = 0.000000e+00 sec.
-CG:   linear solver      = 2.450395e-02 sec.
+CG:   linear solver      = 2.284884e-02 sec.
 CG: relative residual    = 7.364660e-11
 
