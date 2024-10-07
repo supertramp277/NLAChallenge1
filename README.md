@@ -138,14 +138,14 @@ Finally, for double checking the rightness of our resuls, we performed two addit
 | ![VectorY Image](output_VectorY.png) | ![vector_y_check Image](output_VectorY_check.png) |
 
 - What more, it's not hard to find that our matrix $A_3 + I$ is actually same as the **mn\*mn** matrix coming from the sharpening convolution operator $H_{sh1}$ which is:
-  \[
-  H\_{sh1} =
-  \begin{bmatrix}
-  0 & -1 & 0 \\
-  -1 & 5 & -1 \\
-  0 & -1 & 0
-  \end{bmatrix}
-  \]
+  <div align="center">
+    <table>
+      <tr><td> 0 </td><td> -1 </td><td> 0 </td></tr>
+      <tr><td> -1 </td><td> 5 </td><td> -1 </td></tr>
+      <tr><td> 0 </td><td> -1 </td><td> 0 </td></tr>
+    </table>
+  </div>
+
   actually we have succeeded to check this by norm of the difference of the two matrix as below in our `cpp code`:
 
   ```cpp
