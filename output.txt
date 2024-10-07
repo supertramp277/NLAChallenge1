@@ -77,3 +77,5 @@ New sparse matrix saved to ./A3_plus_I.mtx
 
 New image saved to output_VectorY_check.png
 
+Norm of (A_sh1 - A3_Plus_I) is: 0
+

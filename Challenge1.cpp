@@ -451,6 +451,16 @@ int main(int argc, char *argv[])
     VectorXd y_check = readMarketVector(yMtxPath); // Read y_check.mtx file data from lis and output it as image
     const std::string y_check_image_path = "output_VectorY_check.png";
     outputVectorImage(y_check, height, width, y_check_image_path);
+
+    // It's straightforward that A3_Plus_I is same as the sharpening convolution mn*mn operator H_{sh1}, check here:
+    // If the norm is zero, then it proves that A3_Plus_I has same function as H_{sh1} 
+    Matrix<double, kernel_size, kernel_size, RowMajor> hsh1;
+    hsh1 << 0.0, -1.0, 0.0,
+        -1.0, 5.0, -1.0,
+        0.0, -1.0, 0.0;
+    SparseMatrix<double, RowMajor> A_sh1 = convolutionMatrix(hsh1, height, width);
+    std::cout << "Norm of (A_sh1 - A3_Plus_I) is: " << (A3_Plus_I - A_sh1).norm() << "\n"
+              << std::endl;
     /********************************************* end ****************************************************/
 
     // Free memory

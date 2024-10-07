@@ -136,3 +136,30 @@ Finally, for double checking the rightness of our resuls, we performed two addit
 | VectorY Image                        | Check (_y_check_)                                 |
 | ------------------------------------ | ------------------------------------------------- |
 | ![VectorY Image](output_VectorY.png) | ![vector_y_check Image](output_VectorY_check.png) |
+
+- What more, it's not hard to find that our matrix $A_3 + I$ is actually same as the **mn\*mn** matrix coming from the sharpening convolution operator $H_{sh1}$ which is:
+  \[
+  H\_{sh1} = \begin{pmatrix}
+  0 & -1 & 0 \\
+  -1 & 5 & -1 \\
+  0 & -1 & 0
+  \end{pmatrix}
+  \]
+  actually we have succeeded to check this by norm of the difference of the two matrix as below in our `cpp code`:
+
+  ```cpp
+  Matrix<double, kernel_size, kernel_size, RowMajor> hsh1;
+  hsh1 << 0.0, -1.0, 0.0,
+        -1.0, 5.0, -1.0,
+        0.0, -1.0, 0.0;
+  SparseMatrix<double, RowMajor> A_sh1 = convolutionMatrix(hsh1, height, width);
+  std::cout << "Norm of (A_sh1 - A3_Plus_I) is:" << (A3_Plus_I - A_sh1).norm() << std::endl;
+  ```
+
+  the output is as below (also in output.txt file):
+
+  ```bash
+  Norm of (A_sh1 - A3_Plus_I) is: 0
+  ```
+
+  So we can give the conclusion that the `output_noised.png` image is coming from the `output_vectorY.png` image by using the sharpening operator $H_{sh1}$.
